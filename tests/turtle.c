@@ -47,10 +47,14 @@ T_RULE(spiral)
 static T_RULE(test)
 {
     T_START
-    T_SQUARE(S, 0.9, LIGHT, 0.2);
+
     T_SQUARE(S, 0.9, G, -1, LIGHT, 0.1);
     T_TR(SN, LIGHT, 1);
-    T_RSQUARE(60, S, 0.5, LIGHT, -0.9, SAT, 1);
+
+    T_FOR(10, S, 0.8, LIGHT, -0.2) {
+        T_RSQUARE(60, S, 0.5, SAT, 1);
+    }
+
     T_SQUARE(S, 0.1);
     T_SQUARE(S, 0.1, X, 2);
     T_SQUARE(S, 0.1, X, 4, R, 45, LIGHT, -0.5);

@@ -162,8 +162,8 @@ enum {
 #define VAR     NOCTT_OP_START, NOCTT_OP_VAR
 
 #define T_TR(...) do { \
-        const float ops[] = {__VA_ARGS__}; \
-        noctt_tr(ctx, sizeof(ops) / sizeof(float), ops); \
+        const float ops_[] = {__VA_ARGS__}; \
+        noctt_tr(ctx, sizeof(ops_) / sizeof(float), ops_); \
     } while (0)
 #define T_RULE(rule) void rule(noctt_turtle_t *ctx)
 
@@ -255,10 +255,10 @@ enum {
         for (ctx->i = 0; ctx->i < ctx->n; ctx->i++) { \
             ctx->step = __LINE__ * 8 + 2; \
             noctt_clone(ctx, 1, 0, NULL); \
+            T_TR(__VA_ARGS__); \
             return; \
             case __LINE__ * 8 + 2:; \
             if (ctx->iflags & NOCTT_FLAG_JUST_CLONED) { \
-                if (ctx->i) T_TR(__VA_ARGS__); \
                 ctx->step = __LINE__ * 8 + 3; \
                 return; \
             } \
@@ -268,7 +268,7 @@ enum {
     } \
     case __LINE__ * 8 + 3:; \
     if (ctx->iflags & NOCTT_FLAG_JUST_CLONED) \
-        P_RUN_BLOCK_AND_KILL_
+        T_RUN_BLOCK_AND_KILL_
 
 
 #define T_KILL do { noctt_kill(ctx); return; } while(0)
