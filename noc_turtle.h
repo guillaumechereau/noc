@@ -203,8 +203,8 @@ enum {
     const float ops_[] = {__VA_ARGS__}; \
     noctt_clone(ctx, mode, sizeof(ops_) / sizeof(float), ops_); \
     if (mode == 1) return; \
+    } while (0); \
     case __LINE__ * 8:; \
-    } while (0)
 
 #define T_CALL(rule, ...) do { \
     T_CLONE(1, ##__VA_ARGS__); \

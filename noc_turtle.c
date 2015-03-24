@@ -12,6 +12,9 @@
 #define min(x, y) ((x) <= (y) ? (x) : (y))
 #define max(x, y) ((x) >= (y) ? (x) : (y))
 
+typedef float vec3_t[3];
+typedef float vec2_t[2];
+
 // Some matrix functions.
 
 static void mat_set_identity(float mat[16])
@@ -290,7 +293,8 @@ noctt_prog_t *noctt_prog_create(noctt_rule_func_t rule, int nb, int seed,
                                 float *mat)
 {
     noctt_prog_t *proc;
-    proc = calloc(1, sizeof(*proc) + nb * sizeof(*proc->turtles));
+    proc = (noctt_prog_t*)
+                calloc(1, sizeof(*proc) + nb * sizeof(*proc->turtles));
     proc->nb = nb;
     proc->rand_next = seed;
     // Init first context.
@@ -432,7 +436,7 @@ static void render(int n, float (*poly)[3], float color[4])
 
 void noctt_poly(const noctt_turtle_t *ctx, int n, float (*poly)[2])
 {
-    float (*points)[3] = malloc(n * sizeof(*points));
+    float (*points)[3] = (vec3_t*)malloc(n * sizeof(*points));
     int i;
     float rgba[4];
     get_rgba(ctx, rgba);
@@ -467,7 +471,7 @@ void noctt_rsquare(const noctt_turtle_t *ctx, float c)
                           {-0.5 + rx, +0.5 - ry},
                           {-0.5 + rx, -0.5 + ry},
                           {+0.5 - rx, -0.5 + ry}};
-    poly = malloc(4 * n * sizeof(*poly));
+    poly = (vec2_t*)malloc(4 * n * sizeof(*poly));
     for (i = 0, a = 0; i < 4 * n; i++) {
         aa = a * M_PI / (2 * (n - 1));
         poly[i][0] = rx * cos(aa) + d[i / n][0];
@@ -484,7 +488,7 @@ void noctt_circle(const noctt_turtle_t *ctx)
     static float (*poly)[2] = NULL;
     int i;
     if (!poly) {
-        poly = malloc(CIRCLE_NB * sizeof(*poly));
+        poly = (vec2_t*)malloc(CIRCLE_NB * sizeof(*poly));
         for (i = 0; i < CIRCLE_NB; i++) {
             poly[i][0] = 0.5f * cos(2 * M_PI * i / CIRCLE_NB);
             poly[i][1] = 0.5f * sin(2 * M_PI * i / CIRCLE_NB);
@@ -499,7 +503,7 @@ void noctt_star(const noctt_turtle_t *ctx, int n, int t, int c)
     int i;
     float (*p)[2];
 
-    p = malloc((2 + n * 2) * sizeof(*p));
+    p = (vec2_t*)malloc((2 + n * 2) * sizeof(*p));
     p[0][0] = 0;
     p[0][1] = 0;
     // The branch points.
