@@ -87,13 +87,62 @@
  *      Set the context variables value.
  */
 
+/* Gives you one chance to change the default macro names used, to avoid
+ * clash with your own code, or maybe because you don't like the T_ prefix.
+ *
+ * To do so, define NOCTT_REDEFINE_NAMES.  You then have to copy and past
+ * the following block in your code, and change the values on the left to
+ * your desired names.
+ * 
+ * If you just want to change a few names, you can just undef them and
+ * redefine the one you like.
+ */
+#ifndef NOCTT_REDEFINE_NAMES
+
+#define S       NOCTT_S
+#define SN      NOCTT_SN
+#define SX      NOCTT_SX
+#define SY      NOCTT_SY
+#define SZ      NOCTT_SZ
+#define X       NOCTT_X
+#define Y       NOCTT_Y
+#define Z       NOCTT_Z
+#define R       NOCTT_R
+#define FLIP    NOCTT_FLIP
+#define HUE     NOCTT_HUE
+#define SAT     NOCTT_SAT
+#define LIGHT   NOCTT_LIGHT
+#define HSL     NOCTT_HSL
+#define A       NOCTT_A
+#define G       NOCTT_G
+#define VAR     NOCTT_VAR
+
+#define T_TR(...)       NOCTT_TR(__VA_ARGS__)
+#define T_RULE(...)     NOCTT_RULE(__VA_ARGS__)
+#define T_START         NOCTT_START
+#define T_END           NOCTT_END
+#define T_YIELD         NOCTT_YIELD
+#define T_CALL(...)     NOCTT_CALL(__VA_ARGS__)
+#define T_SPAWN(...)    NOCTT_SPAWN(__VA_ARGS__)
+
+#define T_SQUARE(...)            NOCTT_SQUARE(__VA_ARGS__)
+#define T_RSQUARE(...)           NOCTT_RSQUARE(__VA_ARGS__)
+#define T_CIRCLE(...)            NOCTT_CIRCLE(__VA_ARGS__)
+#define T_STAR(...)              NOCTT_STAR(__VA_ARGS__)
+#define T_TRIANGLE(...)          NOCTT_TRIANGLE(__VA_ARGS__)
+#define T_TRANSFORM_SPAWN(...)   NOCTT_TRANSFORM_SPAWN(__VA_ARGS__)
+#define T_TRANSFORM(...)         NOCTT_TRANSFORM(__VA_ARGS__)
+#define T_FOR(...)               NOCTT_FOR(__VA_ARGS__)
+
+#endif
+
+
 #include <float.h>
 #include <stdbool.h>
 
 #ifndef NOCTT_NB_VARS
 #   define NOCTT_NB_VARS 0
 #endif
-
 
 typedef struct noctt_turtle noctt_turtle_t;
 typedef void (*noctt_rule_func_t)(noctt_turtle_t*);
@@ -141,64 +190,67 @@ enum {
 
 #define NOCTT_OP_START FLT_MAX
 
-#define S       NOCTT_OP_START, NOCTT_OP_S
-#define SN      NOCTT_OP_START, NOCTT_OP_SN
-#define SX      NOCTT_OP_START, NOCTT_OP_SAXIS, 0
-#define SY      NOCTT_OP_START, NOCTT_OP_SAXIS, 1
-#define SZ      NOCTT_OP_START, NOCTT_OP_SAXIS, 2
-#define X       NOCTT_OP_START, NOCTT_OP_X
-#define Y       X, 0
-#define Z       X, 0, 0
-#define R       NOCTT_OP_START, NOCTT_OP_R
-#define FLIP    NOCTT_OP_START, NOCTT_OP_FLIP
+#define NOCTT_S       NOCTT_OP_START, NOCTT_OP_S
+#define NOCTT_SN      NOCTT_OP_START, NOCTT_OP_SN
+#define NOCTT_SX      NOCTT_OP_START, NOCTT_OP_SAXIS, 0
+#define NOCTT_SY      NOCTT_OP_START, NOCTT_OP_SAXIS, 1
+#define NOCTT_SZ      NOCTT_OP_START, NOCTT_OP_SAXIS, 2
+#define NOCTT_X       NOCTT_OP_START, NOCTT_OP_X
+#define NOCTT_Y       NOCTT_X, 0
+#define NOCTT_Z       NOCTT_X, 0, 0
+#define NOCTT_R       NOCTT_OP_START, NOCTT_OP_R
+#define NOCTT_FLIP    NOCTT_OP_START, NOCTT_OP_FLIP
 
-#define HUE     NOCTT_OP_START, NOCTT_OP_HUE
-#define SAT     NOCTT_OP_START, NOCTT_OP_SAT
-#define LIGHT   NOCTT_OP_START, NOCTT_OP_LIGHT
-#define HSL     NOCTT_OP_START, NOCTT_OP_HSL
-#define A       NOCTT_OP_START, NOCTT_OP_A
+#define NOCTT_HUE     NOCTT_OP_START, NOCTT_OP_HUE
+#define NOCTT_SAT     NOCTT_OP_START, NOCTT_OP_SAT
+#define NOCTT_LIGHT   NOCTT_OP_START, NOCTT_OP_LIGHT
+#define NOCTT_HSL     NOCTT_OP_START, NOCTT_OP_HSL
+#define NOCTT_A       NOCTT_OP_START, NOCTT_OP_A
 
-#define G       NOCTT_OP_START, NOCTT_OP_G
-#define VAR     NOCTT_OP_START, NOCTT_OP_VAR
+#define NOCTT_G       NOCTT_OP_START, NOCTT_OP_G
+#define NOCTT_VAR     NOCTT_OP_START, NOCTT_OP_VAR
 
-#define T_TR(...) do { \
+#define NOCTT_TR(...) do { \
         const float ops_[] = {__VA_ARGS__}; \
         noctt_tr(ctx, sizeof(ops_) / sizeof(float), ops_); \
     } while (0)
-#define T_RULE(rule) void rule(noctt_turtle_t *ctx)
+#define NOCTT_RULE(rule) void rule(noctt_turtle_t *ctx)
 
-#define T_START \
+#define NOCTT_START \
     noctt_turtle_t *new_ = 0; \
     (void) new_; \
     switch (ctx->step) {          \
         case 0:;
 
-#define T_END   \
-        T_KILL; \
+#define NOCTT_END   \
+        NOCTT_KILL; \
     }
 
-#define T_PRIMITIVE_(func, ...) do { \
+#define NOCTT_PRIMITIVE_(func, ...) do { \
     const float ops_[] = {__VA_ARGS__}; \
     noctt_turtle_t ctx_ = *ctx; \
     noctt_tr(&ctx_, sizeof(ops_) / sizeof(float), ops_); \
     func; \
 } while (0)
 
-#define T_SQUARE(...)      T_PRIMITIVE_(noctt_square(&ctx_), __VA_ARGS__)
-#define T_RSQUARE(r, ...)  T_PRIMITIVE_(noctt_rsquare(&ctx_, r), __VA_ARGS__)
-#define T_CIRCLE(...)      T_PRIMITIVE_(noctt_circle(&ctx_), __VA_ARGS__)
-#define T_STAR(n, t, c, ...) \
-                    T_PRIMITIVE_(noctt_star(&ctx_, n, t, c), __VA_ARGS__)
-#define T_TRIANGLE(...)    T_STAR(3, 0, 0, ##__VA_ARGS__)
+#define NOCTT_SQUARE(...)      \
+    NOCTT_PRIMITIVE_(noctt_square(&ctx_), __VA_ARGS__)
+#define NOCTT_RSQUARE(r, ...)  \
+    NOCTT_PRIMITIVE_(noctt_rsquare(&ctx_, r), __VA_ARGS__)
+#define NOCTT_CIRCLE(...)      \
+    NOCTT_PRIMITIVE_(noctt_circle(&ctx_), __VA_ARGS__)
+#define NOCTT_STAR(n, t, c, ...) \
+    NOCTT_PRIMITIVE_(noctt_star(&ctx_, n, t, c), __VA_ARGS__)
+#define NOCTT_TRIANGLE(...)    NOCTT_STAR(3, 0, 0, ##__VA_ARGS__)
 
-#define T_YIELD do { \
+#define NOCTT_YIELD do { \
     ctx->step = __LINE__ * 8; \
     ctx->iflags |= NOCTT_FLAG_DONE; \
     return; \
     case __LINE__ * 8:; \
 } while (0)
 
-#define T_CLONE(mode, ...) do { \
+#define NOCTT_CLONE(mode, ...) do { \
     ctx->step = __LINE__ * 8; \
     const float ops_[] = {__VA_ARGS__}; \
     noctt_clone(ctx, mode, sizeof(ops_) / sizeof(float), ops_); \
@@ -206,8 +258,8 @@ enum {
     } while (0); \
     case __LINE__ * 8:; \
 
-#define T_CALL(rule, ...) do { \
-    T_CLONE(1, ##__VA_ARGS__); \
+#define NOCTT_CALL(rule, ...) do { \
+    NOCTT_CLONE(1, ##__VA_ARGS__); \
     if (ctx->iflags & NOCTT_FLAG_JUST_CLONED) { \
         ctx->iflags &= ~NOCTT_FLAG_JUST_CLONED; \
         ctx->func = rule; \
@@ -216,8 +268,8 @@ enum {
     } \
 } while (0)
 
-#define T_SPAWN(rule, ...) do { \
-    T_CLONE(0, ##__VA_ARGS__); \
+#define NOCTT_SPAWN(rule, ...) do { \
+    NOCTT_CLONE(0, ##__VA_ARGS__); \
     if (ctx->iflags & NOCTT_FLAG_JUST_CLONED) { \
         ctx->iflags &= ~NOCTT_FLAG_JUST_CLONED; \
         ctx->func = rule; \
@@ -226,7 +278,7 @@ enum {
     } \
 } while (0)
 
-#define T_RUN_BLOCK_AND_KILL_ \
+#define NOCTT_RUN_BLOCK_AND_KILL_ \
     for (ctx->iflags &= ~NOCTT_FLAG_BLOCK_DONE; ; \
          ctx->iflags |= NOCTT_FLAG_BLOCK_DONE) \
         if (ctx->iflags & NOCTT_FLAG_BLOCK_DONE) { \
@@ -235,27 +287,27 @@ enum {
         } \
         else
 
-#define T_TRANSFORM_SPAWN(...) \
-    T_CLONE(0, ##__VA_ARGS__); \
+#define NOCTT_TRANSFORM_SPAWN(...) \
+    NOCTT_CLONE(0, ##__VA_ARGS__); \
     if (ctx->iflags & NOCTT_FLAG_JUST_CLONED) \
         if (ctx->iflags |= ~NOCTT_FLAG_JUST_CLONED, 1) \
-            T_RUN_BLOCK_AND_KILL_
+            NOCTT_RUN_BLOCK_AND_KILL_
 
-#define T_TRANSFORM(...) \
-    T_CLONE(1, ##__VA_ARGS__); \
+#define NOCTT_TRANSFORM(...) \
+    NOCTT_CLONE(1, ##__VA_ARGS__); \
     if (ctx->iflags & NOCTT_FLAG_JUST_CLONED) \
         if (ctx->iflags |= ~NOCTT_FLAG_JUST_CLONED, 1) \
-            T_RUN_BLOCK_AND_KILL_
+            NOCTT_RUN_BLOCK_AND_KILL_
 
-#define T_FOR(n_, ...) \
-    T_CLONE(1); \
+#define NOCTT_FOR(n_, ...) \
+    NOCTT_CLONE(1); \
     if (ctx->iflags & NOCTT_FLAG_JUST_CLONED) { \
         ctx->step = __LINE__ * 8 + 1; case __LINE__ * 8 + 1:; \
         ctx->n = n_; \
         for (ctx->i = 0; ctx->i < ctx->n; ctx->i++) { \
             ctx->step = __LINE__ * 8 + 2; \
             noctt_clone(ctx, 1, 0, NULL); \
-            T_TR(__VA_ARGS__); \
+            NOCTT_TR(__VA_ARGS__); \
             return; \
             case __LINE__ * 8 + 2:; \
             if (ctx->iflags & NOCTT_FLAG_JUST_CLONED) { \
@@ -268,10 +320,10 @@ enum {
     } \
     case __LINE__ * 8 + 3:; \
     if (ctx->iflags & NOCTT_FLAG_JUST_CLONED) \
-        T_RUN_BLOCK_AND_KILL_
+        NOCTT_RUN_BLOCK_AND_KILL_
 
 
-#define T_KILL do { noctt_kill(ctx); return; } while(0)
+#define NOCTT_KILL do { noctt_kill(ctx); return; } while(0)
 
 void noctt_square(const noctt_turtle_t *ctx);
 void noctt_rsquare(const noctt_turtle_t *ctx, float r);
