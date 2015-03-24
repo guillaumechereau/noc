@@ -48,6 +48,7 @@ static T_RULE(test)
 {
     T_START
 
+    T_SQUARE(S, 0.9, LIGHT, 0.2);
     T_SQUARE(S, 0.9, G, -1, LIGHT, 0.1);
     T_TR(SN, LIGHT, 1);
 
