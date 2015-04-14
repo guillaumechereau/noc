@@ -202,7 +202,7 @@ static void flip(noctt_turtle_t *ctx, float a)
 
 void noctt_tr(noctt_turtle_t *ctx, int n_tot, const float *codes)
 {
-    int nb = 0, op, c;
+    int nb = 0, op, c, i;
     while ((op = noctt_tr_iter_op(&n_tot, &codes, &nb)) != NOCTT_OP_END) {
         switch (op) {
         case NOCTT_OP_S:
@@ -210,6 +210,13 @@ void noctt_tr(noctt_turtle_t *ctx, int n_tot, const float *codes)
             scale(ctx, codes[0],
                   nb > 1 ? codes[1] : codes[0],
                   nb > 2 ? codes[2] : 1);
+            break;
+        case NOCTT_OP_SAXIS:
+            assert(nb == 2);
+            assert(codes[0] >= 0 && codes[0] <= 2);
+            scale(ctx, codes[0] == 0 ? codes[1] : 1,
+                       codes[0] == 1 ? codes[1] : 1,
+                       codes[0] == 2 ? codes[1] : 1);
             break;
         case NOCTT_OP_SN:
             assert(nb == 0);
