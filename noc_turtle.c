@@ -291,6 +291,7 @@ void noctt_clone(noctt_turtle_t *ctx, int mode, int n, const float *ops)
             if (mode == 1) {
                 ctx->wait = new_turtle;
             }
+            current->active++;
             break;
         }
     }
@@ -300,12 +301,14 @@ noctt_prog_t *noctt_prog_create(noctt_rule_func_t rule, int nb, int seed,
                                 float *mat)
 {
     noctt_prog_t *proc;
+    noctt_turtle_t *ctx;
     proc = (noctt_prog_t*)
                 calloc(1, sizeof(*proc) + nb * sizeof(*proc->turtles));
     proc->nb = nb;
     proc->rand_next = seed;
     // Init first context.
-    noctt_turtle_t *ctx = &proc->turtles[0];
+    proc->active = 1;
+    ctx = &proc->turtles[0];
     ctx->color[3] = 1;
     ctx->func = rule;
     mat_set_identity(ctx->mat);
@@ -340,6 +343,7 @@ static bool iter_context(noctt_turtle_t *ctx)
     if (ctx->func == noctt_dead) {
         assert_can_remove(ctx);
         ctx->func = NULL;
+        current->active--;
     }
 
     if (!ctx->func)

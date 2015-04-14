@@ -338,8 +338,8 @@ typedef void (*noctt_render_func_t)(int n, float (*poly)[3], float color[4],
                                     void *user_data);
 
 typedef struct noctt_prog {
-    int                 nb;         // total number of contexts.
-    // int             nb_active;  // number of active contexts.
+    int                 nb;         // total number of turtles.
+    int                 active;     // number of active turtles.
     unsigned long       rand_next;
     noctt_render_func_t render_callback;
     void                *render_callback_data;
