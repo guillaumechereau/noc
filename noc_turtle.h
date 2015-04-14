@@ -352,6 +352,6 @@ bool brand(float x);
 float pm(float x, float a);
 
 noctt_prog_t *noctt_prog_create(noctt_rule_func_t rule, int nb,
-                                int seed, float rect[4]);
+                                int seed, float rect[16]);
 void noctt_prog_delete(noctt_prog_t *prog);
 void noctt_prog_iter(noctt_prog_t *prog);
