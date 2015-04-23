@@ -421,8 +421,6 @@ enum {
 #define NOCTT_RULE(rule) void rule(noctt_turtle_t *ctx)
 
 #define NOCTT_START \
-    noctt_turtle_t *new_ = 0; \
-    (void) new_; \
     switch (ctx->step) {          \
         case 0:;
 
