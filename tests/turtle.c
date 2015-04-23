@@ -7,8 +7,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#define GLSL(x) #x
-
 static const int W = 640;
 static const int H = 480;
 
@@ -93,22 +91,22 @@ static void mat_scale(float m[16], float x, float y, float z)
 
 static void init_opengl(int w, int h)
 {
-    const char *vshader_src = GLSL(
-        uniform     mat4 u_proj;
-        attribute   vec3 a_pos;
-        void main()
-        {
-            gl_Position = u_proj * vec4(a_pos, 1.0);
-        }
-    );
+    const char *vshader_src =
+        "uniform     mat4 u_proj;                       \n"
+        "attribute   vec3 a_pos;                        \n"
+        "void main()                                    \n"
+        "{                                              \n"
+        "   gl_Position = u_proj * vec4(a_pos, 1.0);    \n"
+        "}                                              \n"
+    ;
 
-    const char *fshader_src = GLSL(
-        uniform     vec4 u_color;
-        void main()
-        {
-            gl_FragColor = u_color;
-        }
-    );
+    const char *fshader_src =
+        "uniform     vec4 u_color;                      \n"
+        "void main()                                    \n"
+        "{                                              \n"
+        "   gl_FragColor = u_color;                     \n"
+        "}                                              \n"
+    ;
 
     float mat[16];
     GLuint vshader, fshader;
