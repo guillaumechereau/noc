@@ -1,5 +1,6 @@
 #include "noc_turtle.h"
 
+#include <math.h>
 #include <stdio.h>
 #include <assert.h>
 #include <stdbool.h>
@@ -151,9 +152,28 @@ static void init_opengl(int w, int h)
     glUniformMatrix4fv(gl_prog.u_proj_l, 1, 0, mat);
 }
 
-static void render_callback(int n, float (*poly)[3], float color[4],
+static void hsl_to_rgb(const float hsl[3], float rgb[3])
+{
+    float r = 0, g = 0, b = 0, c, x, m;
+    const float h = hsl[0] / 60, s = hsl[1], l = hsl[2];
+    c = (1 - fabs(2 * l - 1)) * s;
+    x = c * (1 - fabs(fmod(h, 2) - 1));
+    if      (h < 1) {r = c; g = x; b = 0;}
+    else if (h < 2) {r = x; g = c; b = 0;}
+    else if (h < 3) {r = 0; g = c; b = x;}
+    else if (h < 4) {r = 0; g = x; b = c;}
+    else if (h < 5) {r = x; g = 0; b = c;}
+    else if (h < 6) {r = c; g = 0; b = x;}
+    m = l - 0.5 * c;
+    rgb[0] = r + m;
+    rgb[1] = g + m;
+    rgb[2] = b + m;
+}
+
+static void render_callback(int n, float (*poly)[3], const float color[4],
                             unsigned int flags, void *user_data)
 {
+    float rgba[4];
     static unsigned int current_flags = 0;
     assert(sizeof(float) == sizeof(GL_FLOAT));
     if (current_flags != flags) {
@@ -167,7 +187,9 @@ static void render_callback(int n, float (*poly)[3], float color[4],
         }
         current_flags = flags;
     }
-    glUniform4fv(gl_prog.u_color_l, 1, color);
+    hsl_to_rgb(color, rgba);
+    rgba[3] = color[3];
+    glUniform4fv(gl_prog.u_color_l, 1, rgba);
     glVertexAttribPointer(gl_prog.a_pos_l, 3, GL_FLOAT, false, 0, (void*)poly);
     glDrawArrays(GL_TRIANGLE_FAN, 0, n);
 }

@@ -407,7 +407,8 @@ void noctt_kill(noctt_turtle_t *ctx);
 void noctt_tr(noctt_turtle_t *ctx, int n, const float *ops);
 void noctt_clone(noctt_turtle_t *ctx, int mode, int n, const float *ops);
 
-typedef void (*noctt_render_func_t)(int n, float (*poly)[3], float color[4],
+typedef void (*noctt_render_func_t)(int n, float (*poly)[3],
+                                    const float color[4],
                                     unsigned int flags, void *user_data);
 
 typedef struct noctt_prog {

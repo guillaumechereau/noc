@@ -406,30 +406,6 @@ void noctt_prog_iter(noctt_prog_t *proc)
     }
 }
 
-static void hsl_to_rgb(const float hsl[3], float rgb[3])
-{
-    float r = 0, g = 0, b = 0, c, x, m;
-    const float h = hsl[0] / 60, s = hsl[1], l = hsl[2];
-    c = (1 - fabs(2 * l - 1)) * s;
-    x = c * (1 - fabs(fmod(h, 2) - 1));
-    if      (h < 1) {r = c; g = x; b = 0;}
-    else if (h < 2) {r = x; g = c; b = 0;}
-    else if (h < 3) {r = 0; g = c; b = x;}
-    else if (h < 4) {r = 0; g = x; b = c;}
-    else if (h < 5) {r = x; g = 0; b = c;}
-    else if (h < 6) {r = c; g = 0; b = x;}
-    m = l - 0.5 * c;
-    rgb[0] = r + m;
-    rgb[1] = g + m;
-    rgb[2] = b + m;
-}
-
-static void get_rgba(const noctt_turtle_t *ctx, float rgba[4])
-{
-    hsl_to_rgb(ctx->color, rgba);
-    rgba[3] = ctx->color[3];
-}
-
 static int noctt_rand()
 {
     current->rand_next = current->rand_next * 1103515245 + 12345;
@@ -451,7 +427,8 @@ float pm(float x, float a)
     return noctt_frand(x - a, x + a);
 }
 
-static void render(int n, float (*poly)[3], float color[4], unsigned int flags)
+static void render(int n, float (*poly)[3], const float color[4],
+                   unsigned int flags)
 {
     if (!current->render_callback) {
         printf("ERROR: need to set a render callback\n");
@@ -465,11 +442,9 @@ void noctt_poly(const noctt_turtle_t *ctx, int n, float (*poly)[2])
 {
     float (*points)[3] = (vec3_t*)malloc(n * sizeof(*points));
     int i;
-    float rgba[4];
-    get_rgba(ctx, rgba);
     for (i = 0; i < n; i++)
         mat_mul_vec(ctx->mat, poly[i], points[i]);
-    render(n, points, rgba, ctx->flags);
+    render(n, points, ctx->color, ctx->flags);
     free(points);
 }
 
