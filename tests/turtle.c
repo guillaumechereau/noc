@@ -217,7 +217,7 @@ int main()
 
     mat_scale(mat, W, H, 1);
 
-    prog = noctt_prog_create(test, 256, 0, mat);
+    prog = noctt_prog_create(test, 256, 0, mat, 1);
     prog->render_callback = render_callback;
     prog->render_callback_data = NULL;
 

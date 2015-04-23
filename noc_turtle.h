@@ -415,6 +415,7 @@ typedef struct noctt_prog {
     int                 nb;         // total number of turtles.
     int                 active;     // number of active turtles.
     unsigned long       rand_next;
+    float               pixel_size;
     noctt_render_func_t render_callback;
     void                *render_callback_data;
     // Kill context if x or y scale get below this value.
@@ -426,7 +427,7 @@ bool brand(float x);
 float pm(float x, float a);
 
 noctt_prog_t *noctt_prog_create(noctt_rule_func_t rule, int nb,
-                                int seed, float rect[16]);
+                                int seed, float rect[16], float pixel_size);
 void noctt_prog_delete(noctt_prog_t *prog);
 void noctt_prog_iter(noctt_prog_t *prog);
 

@@ -146,8 +146,8 @@ static void scale_normalize(noctt_turtle_t *ctx)
 static void grow(noctt_turtle_t *ctx, float x, float y)
 {
     float sx, sy, kx, ky;
-    sx = ctx->scale[0];
-    sy = ctx->scale[1];
+    sx = ctx->scale[0] / current->pixel_size;
+    sy = ctx->scale[1] / current->pixel_size;
     kx = (2 * x + sx) / sx;
     ky = (2 * y + sy) / sy;
     scale(ctx, kx, ky, 1);
@@ -313,7 +313,7 @@ void noctt_clone(noctt_turtle_t *ctx, int mode, int n, const float *ops)
 }
 
 noctt_prog_t *noctt_prog_create(noctt_rule_func_t rule, int nb, int seed,
-                                float *mat)
+                                float *mat, float pixel_size)
 {
     noctt_prog_t *proc;
     noctt_turtle_t *ctx;
@@ -321,6 +321,8 @@ noctt_prog_t *noctt_prog_create(noctt_rule_func_t rule, int nb, int seed,
                 calloc(1, sizeof(*proc) + nb * sizeof(*proc->turtles));
     proc->nb = nb;
     proc->rand_next = seed;
+    assert(pixel_size);
+    proc->pixel_size = pixel_size;
     // Init first context.
     proc->active = 1;
     ctx = &proc->turtles[0];
