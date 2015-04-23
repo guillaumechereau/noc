@@ -476,6 +476,20 @@ enum {
 #define NOCTT_VAR     NOCTT_OP_START, NOCTT_OP_VAR
 #define NOCTT_FLAG    NOCTT_OP_START, NOCTT_OP_FLAG
 
+// If __COUNTER__ is defined (gcc and clang), we use it, since it has the
+// advantage of staying the same when we modify the code.  It also allow
+// to put several on the same line.
+// NOCTT_MARKER is used to generate a uniq int that can be used for labels
+// If we want to put several on the same line, we have to use a different
+// 'n' value for each of them.  If we want to get the same value for two
+// markers, we need to put the same n, but also set the shift of one to the
+// ofset between the two (so that it works with __COUNTER__ too).
+#ifdef __COUNTER__
+    #define NOCTT_MARKER(n, shift) (__COUNTER__ + shift)
+#else
+    #define NOCTT_MARKER(n, shift) (__LINE__ * 8 + n)
+#endif
+
 #define NOCTT_TR(...) do { \
         const float ops_[] = {__VA_ARGS__}; \
         noctt_tr(ctx, sizeof(ops_) / sizeof(float), ops_); \
@@ -517,8 +531,8 @@ enum {
 
 #define NOCTT_YIELD(...) do { \
     ctx->tmp = (1, ##__VA_ARGS__); \
-    ctx->step = __LINE__ * 8; \
-    case __LINE__ * 8:; \
+    ctx->step = NOCTT_MARKER(0, 1); \
+    case NOCTT_MARKER(0, 0):; \
     if (ctx->tmp--) { \
         ctx->iflags |= NOCTT_FLAG_DONE; \
         return; \
@@ -526,12 +540,12 @@ enum {
 } while (0)
 
 #define NOCTT_CLONE(mode, ...) do { \
-    ctx->step = __LINE__ * 8; \
+    ctx->step = NOCTT_MARKER(0, 1); \
     const float ops_[] = {__VA_ARGS__}; \
     noctt_clone(ctx, mode, sizeof(ops_) / sizeof(float), ops_); \
     if (mode == 1) return; \
     } while (0); \
-    case __LINE__ * 8:; \
+    case NOCTT_MARKER(0, 0):; \
 
 #define NOCTT_CALL(rule, ...) do { \
     NOCTT_CLONE(1, ##__VA_ARGS__); \
@@ -578,23 +592,23 @@ enum {
     ctx->tmp = n_; \
     NOCTT_CLONE(1); \
     if (ctx->iflags & NOCTT_FLAG_JUST_CLONED) { \
-        ctx->step = __LINE__ * 8 + 1; case __LINE__ * 8 + 1:; \
+        ctx->step = NOCTT_MARKER(1, 1); case NOCTT_MARKER(1, 0):; \
         ctx->n = ctx->tmp; \
         for (ctx->i = 0; ctx->i < ctx->n; ctx->i++) { \
-            ctx->step = __LINE__ * 8 + 2; \
+            ctx->step = NOCTT_MARKER(2, 1); \
             noctt_clone(ctx, 1, 0, NULL); \
             NOCTT_TR(__VA_ARGS__); \
             return; \
-            case __LINE__ * 8 + 2:; \
+            case NOCTT_MARKER(2, 0):; \
             if (ctx->iflags & NOCTT_FLAG_JUST_CLONED) { \
-                ctx->step = __LINE__ * 8 + 3; \
+                ctx->step = NOCTT_MARKER(3, 1); \
                 return; \
             } \
         } \
         noctt_kill(ctx); \
         return; \
     } \
-    case __LINE__ * 8 + 3:; \
+    case NOCTT_MARKER(3, 0):; \
     if (ctx->iflags & NOCTT_FLAG_JUST_CLONED) \
         NOCTT_RUN_BLOCK_AND_KILL_
 
