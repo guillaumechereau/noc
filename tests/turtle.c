@@ -31,7 +31,7 @@ static gl_prog_t gl_prog;
 static DEFINE_RULE(spiral_node)
     SQUARE();
     TR(HUE, pm(0, 5));
-    YIELD;
+    YIELD();
     if (brand(0.01)) {
         TR(FLIP, 0);
         SPAWN(spiral_node, R, -90);
@@ -60,9 +60,10 @@ static DEFINE_RULE(test)
     SQUARE(S, 0.9, G, -1, LIGHT, 0.1);
     TR(SN, LIGHT, 1);
 
-    TRANSFORM(X, -0.25, 0.25, S, 0.5) {
-        FOR(10, S, 0.8, LIGHT, -0.2) {
-            RSQUARE(60, S, 0.5, SAT, 1);
+    TRANSFORM_SPAWN(X, -0.25, 0.25, S, 0.5) {
+        FOR(64, G, -2, LIGHT, -0.02) {
+            RSQUARE(60, S, 0.5);
+            YIELD(4);
         }
     }
 

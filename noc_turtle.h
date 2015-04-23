@@ -175,7 +175,7 @@
 #define RULE(...)     NOCTT_RULE(__VA_ARGS__)
 #define START         NOCTT_START
 #define END           NOCTT_END
-#define YIELD         NOCTT_YIELD
+#define YIELD(...)    NOCTT_YIELD(__VA_ARGS__)
 #define CALL(...)     NOCTT_CALL(__VA_ARGS__)
 #define SPAWN(...)    NOCTT_SPAWN(__VA_ARGS__)
 #define DEFINE_RULE(...)   NOCTT_DEFINE_RULE(__VA_ARGS__)
@@ -215,7 +215,7 @@ struct noctt_turtle {
     unsigned int        flags;   // User defined flags.
     int                 step;
     int                 time;
-    int                 n, i;
+    int                 n, i, tmp;
     float               vars[NOCTT_NB_VARS];
 };
 
@@ -312,11 +312,14 @@ enum {
     NOCTT_PRIMITIVE_(noctt_star(&ctx_, n, t, c), __VA_ARGS__)
 #define NOCTT_TRIANGLE(...)    NOCTT_STAR(3, 0, 0, ##__VA_ARGS__)
 
-#define NOCTT_YIELD do { \
+#define NOCTT_YIELD(...) do { \
+    ctx->tmp = (1, ##__VA_ARGS__); \
     ctx->step = __LINE__ * 8; \
-    ctx->iflags |= NOCTT_FLAG_DONE; \
-    return; \
     case __LINE__ * 8:; \
+    if (ctx->tmp--) { \
+        ctx->iflags |= NOCTT_FLAG_DONE; \
+        return; \
+    } \
 } while (0)
 
 #define NOCTT_CLONE(mode, ...) do { \
@@ -369,10 +372,11 @@ enum {
             NOCTT_RUN_BLOCK_AND_KILL_
 
 #define NOCTT_FOR(n_, ...) \
+    ctx->tmp = n_; \
     NOCTT_CLONE(1); \
     if (ctx->iflags & NOCTT_FLAG_JUST_CLONED) { \
         ctx->step = __LINE__ * 8 + 1; case __LINE__ * 8 + 1:; \
-        ctx->n = n_; \
+        ctx->n = ctx->tmp; \
         for (ctx->i = 0; ctx->i < ctx->n; ctx->i++) { \
             ctx->step = __LINE__ * 8 + 2; \
             noctt_clone(ctx, 1, 0, NULL); \
