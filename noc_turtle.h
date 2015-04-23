@@ -1,5 +1,148 @@
 
-/* Some doc about the operations:
+/* noc_turtle.h
+ *
+ * By Guillaume Chereau <guillaume@noctua-software.com>
+ *
+ * License:
+ *  This software is in the public domain. Where that dedication is not
+ *  recognized, you are granted a perpetual, irrevocable license to copy
+ *  and modify this file however you want.
+ *
+ * This library allows to create procedural graphics from a set of rules,
+ * The syntax of the rules is somehow similar to the ContextFree project
+ * (http://www.contextfreeart.org).
+ *
+ * A rule is defined as a C function that takes a noctt_turtle_t object as
+ * argument.  Since all the rules are actually coroutine, relying on macro
+ * to hide the dirty things, you have to enclose the code with a START and
+ * END.  As a convenience, you can use the DEFINE_RULE macro.  Here is a
+ * basic rule that just render a square:
+ *
+ * static DEFINE_RULE(my_rule)
+ *     SQUARE();
+ * END_RULE
+ *
+ * Turtles
+ * -------
+ *
+ * Every rule is executed in the context of a turtle (I chose the name since
+ * this is similar to the turtle in the LOGO language).  A turtle possess a
+ * 4x4 transformation matrix that represents its position, rotation and scale.
+ * It also has a color and a set of flags and variables that can be set by the
+ * user.
+ *
+ * You can change the turtle properties using operations and the TR macro.
+ * For example to move the turtle a unit distance in the X direction, we
+ * can write:
+ *
+ *     TR(X, 1);
+ *
+ * The macro can take an arbitrary number of arguments, so we can chain the
+ * operations:  Here we move the turtle on 1 along X, then rotate it of
+ * 45 degrees, and finally scale it to half its size:
+ *
+ *     SQUARE();   // First square at the current pos.
+ *     TR(X, 1, R, 45, S, 0.5);
+ *     SQUARE();   // Second square in the new position.
+ *
+ * If we just want to apply a transformation in the context of a rendering
+ * operation, we can put it as argument of the operation, so the previous
+ * example can be written as:
+ *
+ *     SQUARE();
+ *     SQUARE(X, 1, R, 45, S, 0.5);
+ *     // At the point the turtle is still in its original context.
+ *
+ * If you want to apply a transformation only for a block of code, you can
+ * use the TRANSFORM macro:
+ *
+ *     TRANSFORM(LIGHT, 0.5) {  // Only affect the block.
+ *         SQUARE();
+ *         CIRCLE(X, 1);
+ *     }
+ *
+ * You can have several turtles running at the same time.  In order to create
+ * a new turtle, we can spawn a previously defined rule.  To control the
+ * timing, we need to use the YIELD macro, that tell the turtle to wait one
+ * iteration before proceeding with the rest of the rule.
+ *
+ *     DEFINE_RULE(a_rule)
+ *         SQUARE();
+ *         YIELD();
+ *         SQUARE(S, 0.8, LIGHT, -0.5);
+ *     END_RULE
+ *
+ *     DEFINE_RULE(main_rule)
+ *         // Create a new turtle from the current one, scale it, and make it
+ *         // process the rule 'a_rule'.
+ *         SPAWN(a_rule, S, 0.5);
+ *         // The rest of the current rule will run in parallel to a_rule.
+ *         ...
+ *     END_RULE
+ *
+ * An other way is to use the TRANSFORM_SPAWN macro, that runs a block in
+ * the context of the new turtle.
+ *
+ * Looping
+ * -------
+ *
+ * The FOR macro allow to run a loop, with an optional transformation applied
+ * at every iteration:
+ *
+ *     // Render 10 circles each one scaled by 0.9 from the previous one,
+ *     // and 10/100 darker.
+ *     FOR(10, S, 0.9, LIGHT, -0.1) {
+ *         CIRCLE();
+ *     }
+ *
+ * Usage
+ * -----
+ * The library does not do the rendering, instead it relies on the client
+ * to provide a callback that will be called each time a render operation
+ * is executed.  The signature of the callback is:
+ *
+ * void *callback(int n, float (*poly)[3],
+ *                const float color[4],
+ *                unsigned int flags, void *user_data);
+ *
+ * n          : number of vertices to renders.
+ * poly       : pointer to the vertices as float[3] x,y,z values.
+ * color      : the color, as (Hue, Sat, Value, Alpha) tuple.  It is up to the
+ *              client to convert to RGBA if needed.
+ * flags      : the current turtle user flag values.  This is up to the client
+ *              to define what they mean.
+ * user_data  : can be set by the user.
+ *
+ *
+ * Typically the client would first create a program, with noctt_prog_create,
+ * passing the pointer to the initial rule to be called:
+ *
+ *     noctt_prog_t *prog = noctt_prog_create(
+ *         my_rule,  // The rule to call.
+ *         256,      // Max number of turtles.
+ *         0,        // Inital seed.
+ *         NULL,     // Optional initial transformation matrix.
+ *         1);       // Pixel logical size (used for the G operation).
+ *
+ * Then set the rendering callback:
+ *
+ *     prog->render_callback = my_render_callback;
+ *     prog->render_callback_data = NULL;
+ *
+ * Then we can call noctt_prog_iter to step into the rendering, our callback
+ * will be called appropriately.
+ *
+ *     while (proc->active) {
+ *         noctt_prg_iter(prog);
+ *     }
+ *
+ * Finally when we are done, we can delete the program:
+ *
+ *     noctt_prog_delete(prog);
+ *
+ *
+ * Some doc about the operations
+ * -----------------------------
  *
  * Since I try to follow the same conventions as ContextFree when possible, we
  * can also refer to the doc at:
@@ -83,10 +226,10 @@
  * Other operations
  * ----------------
  *
- *  VAR, i0, v0, [i1, v1], ..., [in, vn]
+ *  VAR, i0, v0, [i1, v1, ..., in, vn]
  *      Set the context variables value.
  *
- *  FLAG f [v], [f2, v2, f3, v3, ...]
+ *  FLAG f [v], [f2, v2, ..., fn, vn]
  *      Set the flag value.  If v is not defined, the default is 1.
  */
 
