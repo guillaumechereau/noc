@@ -200,6 +200,14 @@ static void flip(noctt_turtle_t *ctx, float a)
     mat_mult(ctx->mat, m);
 }
 
+static int set_flags(int x, int mask, bool value)
+{
+    if (value)
+        return x | mask;
+    else
+        return x & ~mask;
+}
+
 void noctt_tr(noctt_turtle_t *ctx, int n_tot, const float *codes)
 {
     int nb = 0, op, c, i;
@@ -268,6 +276,13 @@ void noctt_tr(noctt_turtle_t *ctx, int n_tot, const float *codes)
                 ctx->color[0] = mix_angle(ctx->color[0], codes[1], codes[0]);
                 ctx->color[1] = mix(ctx->color[1], codes[2], codes[0]);
                 ctx->color[2] = mix(ctx->color[2], codes[3], codes[0]);
+            }
+            break;
+        case NOCTT_OP_FLAG:
+            assert(nb == 1 || (nb % 2) == 0);
+            for (i = 0; i < nb; i += 2) {
+                ctx->flags = set_flags(ctx->flags, codes[i],
+                                   nb > 1 ? codes[i + 1] : 1);
             }
             break;
         default:
@@ -436,13 +451,14 @@ float pm(float x, float a)
     return noctt_frand(x - a, x + a);
 }
 
-static void render(int n, float (*poly)[3], float color[4])
+static void render(int n, float (*poly)[3], float color[4], unsigned int flags)
 {
     if (!current->render_callback) {
         printf("ERROR: need to set a render callback\n");
         assert(0);
     }
-    current->render_callback(n, poly, color, current->render_callback_data);
+    current->render_callback(n, poly, color, flags,
+                             current->render_callback_data);
 }
 
 void noctt_poly(const noctt_turtle_t *ctx, int n, float (*poly)[2])
@@ -453,7 +469,7 @@ void noctt_poly(const noctt_turtle_t *ctx, int n, float (*poly)[2])
     get_rgba(ctx, rgba);
     for (i = 0; i < n; i++)
         mat_mul_vec(ctx->mat, poly[i], points[i]);
-    render(n, points, rgba);
+    render(n, points, rgba, ctx->flags);
     free(points);
 }
 

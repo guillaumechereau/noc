@@ -85,6 +85,9 @@
  *
  *  VAR, i0, v0, [i1, v1], ..., [in, vn]
  *      Set the context variables value.
+ *
+ *  FLAG f [v], [f2, v2, f3, v3, ...]
+ *      Set the flag value.  If v is not defined, the default is 1.
  */
 
 /* Gives you one chance to change the default macro names used, to avoid
@@ -116,6 +119,7 @@
 #define A       NOCTT_A
 #define G       NOCTT_G
 #define VAR     NOCTT_VAR
+#define FLAG    NOCTT_FLAG
 
 #define T_TR(...)       NOCTT_TR(__VA_ARGS__)
 #define T_RULE(...)     NOCTT_RULE(__VA_ARGS__)
@@ -153,7 +157,8 @@ struct noctt_turtle {
     float               color[4];
     noctt_turtle_t      *wait;
     noctt_rule_func_t   func;
-    int                 iflags;  // Internal flags.
+    unsigned int        iflags;  // Internal flags.
+    unsigned int        flags;   // User defined flags.
     int                 step;
     int                 time;
     int                 n, i;
@@ -177,6 +182,7 @@ enum {
     NOCTT_OP_A,       // Alpha
 
     NOCTT_OP_VAR,
+    NOCTT_OP_FLAG,
 
     NOCTT_OP_COUNT,
 };
@@ -209,6 +215,7 @@ enum {
 
 #define NOCTT_G       NOCTT_OP_START, NOCTT_OP_G
 #define NOCTT_VAR     NOCTT_OP_START, NOCTT_OP_VAR
+#define NOCTT_FLAG    NOCTT_OP_START, NOCTT_OP_FLAG
 
 #define NOCTT_TR(...) do { \
         const float ops_[] = {__VA_ARGS__}; \
@@ -335,7 +342,7 @@ void noctt_tr(noctt_turtle_t *ctx, int n, const float *ops);
 void noctt_clone(noctt_turtle_t *ctx, int mode, int n, const float *ops);
 
 typedef void (*noctt_render_func_t)(int n, float (*poly)[3], float color[4],
-                                    void *user_data);
+                                    unsigned int flags, void *user_data);
 
 typedef struct noctt_prog {
     int                 nb;         // total number of turtles.

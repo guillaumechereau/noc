@@ -10,6 +10,11 @@
 static const int W = 640;
 static const int H = 480;
 
+enum {
+    FLAG_STENCIL_WRITE  = 1 << 0,
+    FLAG_STENCIL_FILTER = 1 << 1,
+};
+
 typedef struct {
     GLuint prog;
     GLuint u_proj_l;
@@ -42,6 +47,19 @@ T_RULE(spiral)
     T_END
 }
 
+static T_RULE(test_with_stencil)
+{
+    T_START
+    T_TRANSFORM(FLAG, FLAG_STENCIL_WRITE) {
+        T_SQUARE(LIGHT, -0.5);
+        T_CIRCLE(LIGHT, -0.5, X, 0.5, 0.5, S, 0.5);
+    }
+    T_TRANSFORM(FLAG, FLAG, FLAG_STENCIL_FILTER) {
+        T_CIRCLE(X, 0.5);
+    }
+    T_END
+}
+
 static T_RULE(test)
 {
     T_START
@@ -62,6 +80,9 @@ static T_RULE(test)
     T_SQUARE(S, 0.1, X, 6, R, 45, LIGHT, -0.5, SAT, 1, HUE, 180);
     T_CIRCLE(S, 0.1, Y, 2);
     T_TRIANGLE(S, 0.1, Y, 4);
+
+    T_CALL(test_with_stencil, S, 0.2, X, -2, -1);
+
     T_CALL(spiral, Y, -0.5, S, 0.02);
     T_END
 }
@@ -136,9 +157,21 @@ static void init_opengl(int w, int h)
 }
 
 static void render_callback(int n, float (*poly)[3], float color[4],
-                            void *user_data)
+                            unsigned int flags, void *user_data)
 {
+    static unsigned int current_flags = 0;
     assert(sizeof(float) == sizeof(GL_FLOAT));
+    if (current_flags != flags) {
+        if (flags & (FLAG_STENCIL_WRITE | FLAG_STENCIL_FILTER)) {
+            glEnable(GL_STENCIL_TEST);
+            glStencilFunc(GL_LEQUAL, 0x1,
+                          flags & FLAG_STENCIL_WRITE ? 0x0 : 0x1);
+            glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+        } else {
+            glDisable(GL_STENCIL_TEST);
+        }
+        current_flags = flags;
+    }
     glUniform4fv(gl_prog.u_color_l, 1, color);
     glVertexAttribPointer(gl_prog.a_pos_l, 3, GL_FLOAT, false, 0, (void*)poly);
     glDrawArrays(GL_TRIANGLE_FAN, 0, n);
