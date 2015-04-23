@@ -28,9 +28,7 @@ static gl_prog_t gl_prog;
 #define NOC_TURTLE_DEFINE_NAMES
 #include "noc_turtle.h"
 
-static RULE(spiral_node)
-{
-    START
+static DEFINE_RULE(spiral_node)
     SQUARE();
     TR(HUE, pm(0, 5));
     YIELD;
@@ -39,21 +37,15 @@ static RULE(spiral_node)
         SPAWN(spiral_node, R, -90);
     }
     SPAWN(spiral_node, X, 0.4, R, 3, X, 0.4, S, 0.99);
-    END
-}
+END_RULE
 
-RULE(spiral)
-{
-    START
+static DEFINE_RULE(spiral)
     TR(HSL, 1, 0, 1, 0.5);
     CALL(spiral_node);
     CALL(spiral_node, FLIP, 90);
-    END
-}
+END_RULE
 
-static RULE(test_with_stencil)
-{
-    START
+static DEFINE_RULE(test_with_stencil)
     TRANSFORM(FLAG, FLAG_STENCIL_WRITE) {
         SQUARE(LIGHT, -0.5);
         CIRCLE(LIGHT, -0.5, X, 0.5, 0.5, S, 0.5);
@@ -61,13 +53,9 @@ static RULE(test_with_stencil)
     TRANSFORM(FLAG, FLAG, FLAG_STENCIL_FILTER) {
         CIRCLE(X, 0.5);
     }
-    END
-}
+END_RULE
 
-static RULE(test)
-{
-    START
-
+static DEFINE_RULE(test)
     SQUARE(S, 0.9, LIGHT, 0.2);
     SQUARE(S, 0.9, G, -1, LIGHT, 0.1);
     TR(SN, LIGHT, 1);
@@ -88,8 +76,7 @@ static RULE(test)
     CALL(test_with_stencil, S, 0.2, X, -2, -1);
 
     CALL(spiral, Y, -0.5, S, 0.02);
-    END
-}
+END_RULE
 
 #define NOC_TURTLE_UNDEF_NAMES
 #include "noc_turtle.h"

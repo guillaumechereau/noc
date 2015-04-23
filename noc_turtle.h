@@ -138,6 +138,8 @@
 #undef YIELD
 #undef CALL
 #undef SPAWN
+#undef DEFINE_RULE
+#undef END_RULE
 
 #undef SQUARE
 #undef RSQUARE
@@ -176,6 +178,8 @@
 #define YIELD         NOCTT_YIELD
 #define CALL(...)     NOCTT_CALL(__VA_ARGS__)
 #define SPAWN(...)    NOCTT_SPAWN(__VA_ARGS__)
+#define DEFINE_RULE(...)   NOCTT_DEFINE_RULE(__VA_ARGS__)
+#define END_RULE      NOCTT_END_RULE
 
 #define SQUARE(...)            NOCTT_SQUARE(__VA_ARGS__)
 #define RSQUARE(...)           NOCTT_RSQUARE(__VA_ARGS__)
@@ -281,6 +285,14 @@ enum {
 
 #define NOCTT_END   \
         NOCTT_KILL; \
+    }
+
+#define NOCTT_DEFINE_RULE(name) \
+    NOCTT_RULE(name) { \
+        NOCTT_START
+
+#define NOCTT_END_RULE \
+    NOCTT_END \
     }
 
 #define NOCTT_PRIMITIVE_(func, ...) do { \
