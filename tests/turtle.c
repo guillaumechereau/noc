@@ -1,4 +1,5 @@
 #include "noc_turtle.h"
+
 #include <stdio.h>
 #include <assert.h>
 #include <stdbool.h>
@@ -24,68 +25,74 @@ typedef struct {
 
 static gl_prog_t gl_prog;
 
-static T_RULE(spiral_node)
+#define NOC_TURTLE_DEFINE_NAMES
+#include "noc_turtle.h"
+
+static RULE(spiral_node)
 {
-    T_START
-    T_SQUARE();
-    T_TR(HUE, pm(0, 5));
-    T_YIELD;
+    START
+    SQUARE();
+    TR(HUE, pm(0, 5));
+    YIELD;
     if (brand(0.01)) {
-        T_TR(FLIP, 0);
-        T_SPAWN(spiral_node, R, -90);
+        TR(FLIP, 0);
+        SPAWN(spiral_node, R, -90);
     }
-    T_SPAWN(spiral_node, X, 0.4, R, 3, X, 0.4, S, 0.99);
-    T_END
+    SPAWN(spiral_node, X, 0.4, R, 3, X, 0.4, S, 0.99);
+    END
 }
 
-T_RULE(spiral)
+RULE(spiral)
 {
-    T_START
-    T_TR(HSL, 1, 0, 1, 0.5);
-    T_CALL(spiral_node);
-    T_CALL(spiral_node, FLIP, 90);
-    T_END
+    START
+    TR(HSL, 1, 0, 1, 0.5);
+    CALL(spiral_node);
+    CALL(spiral_node, FLIP, 90);
+    END
 }
 
-static T_RULE(test_with_stencil)
+static RULE(test_with_stencil)
 {
-    T_START
-    T_TRANSFORM(FLAG, FLAG_STENCIL_WRITE) {
-        T_SQUARE(LIGHT, -0.5);
-        T_CIRCLE(LIGHT, -0.5, X, 0.5, 0.5, S, 0.5);
+    START
+    TRANSFORM(FLAG, FLAG_STENCIL_WRITE) {
+        SQUARE(LIGHT, -0.5);
+        CIRCLE(LIGHT, -0.5, X, 0.5, 0.5, S, 0.5);
     }
-    T_TRANSFORM(FLAG, FLAG, FLAG_STENCIL_FILTER) {
-        T_CIRCLE(X, 0.5);
+    TRANSFORM(FLAG, FLAG, FLAG_STENCIL_FILTER) {
+        CIRCLE(X, 0.5);
     }
-    T_END
+    END
 }
 
-static T_RULE(test)
+static RULE(test)
 {
-    T_START
+    START
 
-    T_SQUARE(S, 0.9, LIGHT, 0.2);
-    T_SQUARE(S, 0.9, G, -1, LIGHT, 0.1);
-    T_TR(SN, LIGHT, 1);
+    SQUARE(S, 0.9, LIGHT, 0.2);
+    SQUARE(S, 0.9, G, -1, LIGHT, 0.1);
+    TR(SN, LIGHT, 1);
 
-    T_TRANSFORM(X, -0.25, 0.25, S, 0.5) {
-        T_FOR(10, S, 0.8, LIGHT, -0.2) {
-            T_RSQUARE(60, S, 0.5, SAT, 1);
+    TRANSFORM(X, -0.25, 0.25, S, 0.5) {
+        FOR(10, S, 0.8, LIGHT, -0.2) {
+            RSQUARE(60, S, 0.5, SAT, 1);
         }
     }
 
-    T_SQUARE(S, 0.1);
-    T_SQUARE(S, 0.1, X, 2);
-    T_SQUARE(S, 0.1, X, 4, R, 45, LIGHT, -0.5);
-    T_SQUARE(S, 0.1, X, 6, R, 45, LIGHT, -0.5, SAT, 1, HUE, 180);
-    T_CIRCLE(S, 0.1, Y, 2);
-    T_TRIANGLE(S, 0.1, Y, 4);
+    SQUARE(S, 0.1);
+    SQUARE(S, 0.1, X, 2);
+    SQUARE(S, 0.1, X, 4, R, 45, LIGHT, -0.5);
+    SQUARE(S, 0.1, X, 6, R, 45, LIGHT, -0.5, SAT, 1, HUE, 180);
+    CIRCLE(S, 0.1, Y, 2);
+    TRIANGLE(S, 0.1, Y, 4);
 
-    T_CALL(test_with_stencil, S, 0.2, X, -2, -1);
+    CALL(test_with_stencil, S, 0.2, X, -2, -1);
 
-    T_CALL(spiral, Y, -0.5, S, 0.02);
-    T_END
+    CALL(spiral, Y, -0.5, S, 0.02);
+    END
 }
+
+#define NOC_TURTLE_UNDEF_NAMES
+#include "noc_turtle.h"
 
 static void mat_ortho(float m[16], float left, float right, float bottom,
                       float top, float near, float far)

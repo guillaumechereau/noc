@@ -90,17 +90,65 @@
  *      Set the flag value.  If v is not defined, the default is 1.
  */
 
-/* Gives you one chance to change the default macro names used, to avoid
- * clash with your own code, or maybe because you don't like the T_ prefix.
+/* If NOC_TURTLE_DEFINE_NAMES is defined, then we will create default
+ * conveniance macros.  If you don't do it, then you have to use the names with
+ * NOCTT_ prefix, or define the macros by yourself.
  *
- * To do so, define NOCTT_REDEFINE_NAMES.  You then have to copy and past
- * the following block in your code, and change the values on the left to
- * your desired names.
- * 
- * If you just want to change a few names, you can just undef them and
- * redefine the one you like.
+ * You can also include this file with NOC_TURTLE_UNDEF_NAMES to undef all
+ * the names.
+ *
+ * So a common use case would be to enclose your rules with two includes to
+ * define and undefine the macros, like this:
+ *
+ * #define NOC_TURTLE_DEFINE_NAMES
+ * #include "noc_turtle.h"
+ *
+ * // All the code here here can use the default names...
+ *
+ * #define NOC_TURTLE_UNDEF_NAME
+ * #include "noc_turtle.h"
+ *
+ *
  */
-#ifndef NOCTT_REDEFINE_NAMES
+#if defined NOC_TURTLE_UNDEF_NAMES
+
+#undef S
+#undef SN
+#undef SX
+#undef SY
+#undef SZ
+#undef X
+#undef Y
+#undef Z
+#undef R
+#undef FLIP
+#undef HUE
+#undef SAT
+#undef LIGHT
+#undef HSL
+#undef A
+#undef G
+#undef VAR
+#undef FLAG
+
+#undef TR
+#undef RULE
+#undef START
+#undef END
+#undef YIELD
+#undef CALL
+#undef SPAWN
+
+#undef SQUARE
+#undef RSQUARE
+#undef CIRCLE
+#undef STAR
+#undef TRIANGLE
+#undef TRANSFORM_SPAWN
+#undef TRANSFORM
+#undef FOR
+
+#elif defined NOC_TURTLE_DEFINE_NAMES
 
 #define S       NOCTT_S
 #define SN      NOCTT_SN
@@ -121,25 +169,27 @@
 #define VAR     NOCTT_VAR
 #define FLAG    NOCTT_FLAG
 
-#define T_TR(...)       NOCTT_TR(__VA_ARGS__)
-#define T_RULE(...)     NOCTT_RULE(__VA_ARGS__)
-#define T_START         NOCTT_START
-#define T_END           NOCTT_END
-#define T_YIELD         NOCTT_YIELD
-#define T_CALL(...)     NOCTT_CALL(__VA_ARGS__)
-#define T_SPAWN(...)    NOCTT_SPAWN(__VA_ARGS__)
+#define TR(...)       NOCTT_TR(__VA_ARGS__)
+#define RULE(...)     NOCTT_RULE(__VA_ARGS__)
+#define START         NOCTT_START
+#define END           NOCTT_END
+#define YIELD         NOCTT_YIELD
+#define CALL(...)     NOCTT_CALL(__VA_ARGS__)
+#define SPAWN(...)    NOCTT_SPAWN(__VA_ARGS__)
 
-#define T_SQUARE(...)            NOCTT_SQUARE(__VA_ARGS__)
-#define T_RSQUARE(...)           NOCTT_RSQUARE(__VA_ARGS__)
-#define T_CIRCLE(...)            NOCTT_CIRCLE(__VA_ARGS__)
-#define T_STAR(...)              NOCTT_STAR(__VA_ARGS__)
-#define T_TRIANGLE(...)          NOCTT_TRIANGLE(__VA_ARGS__)
-#define T_TRANSFORM_SPAWN(...)   NOCTT_TRANSFORM_SPAWN(__VA_ARGS__)
-#define T_TRANSFORM(...)         NOCTT_TRANSFORM(__VA_ARGS__)
-#define T_FOR(...)               NOCTT_FOR(__VA_ARGS__)
+#define SQUARE(...)            NOCTT_SQUARE(__VA_ARGS__)
+#define RSQUARE(...)           NOCTT_RSQUARE(__VA_ARGS__)
+#define CIRCLE(...)            NOCTT_CIRCLE(__VA_ARGS__)
+#define STAR(...)              NOCTT_STAR(__VA_ARGS__)
+#define TRIANGLE(...)          NOCTT_TRIANGLE(__VA_ARGS__)
+#define TRANSFORM_SPAWN(...)   NOCTT_TRANSFORM_SPAWN(__VA_ARGS__)
+#define TRANSFORM(...)         NOCTT_TRANSFORM(__VA_ARGS__)
+#define FOR(...)               NOCTT_FOR(__VA_ARGS__)
 
 #endif
 
+#ifndef _NOC_TURTLE_H_
+#define _NOC_TURTLE_H_
 
 #include <float.h>
 #include <stdbool.h>
@@ -362,3 +412,5 @@ noctt_prog_t *noctt_prog_create(noctt_rule_func_t rule, int nb,
                                 int seed, float rect[16]);
 void noctt_prog_delete(noctt_prog_t *prog);
 void noctt_prog_iter(noctt_prog_t *prog);
+
+#endif // _NOC_TURTLE_H_
