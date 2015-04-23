@@ -12,11 +12,14 @@
  * The syntax of the rules is somehow similar to the ContextFree project
  * (http://www.contextfreeart.org).
  *
+ * I strongly suggest that you first check the sample code in tests/turtles.c
+ * if you want to get an idea of what it can do.
+ *
  * A rule is defined as a C function that takes a noctt_turtle_t object as
- * argument.  Since all the rules are actually coroutine, relying on macro
- * to hide the dirty things, you have to enclose the code with a START and
+ * argument.  Since all the rules are actually coroutine relying on macros
+ * to hide the dirty details, you have to enclose the code with a START and
  * END.  As a convenience, you can use the DEFINE_RULE macro.  Here is a
- * basic rule that just render a square:
+ * basic rule that just renders a square:
  *
  * static DEFINE_RULE(my_rule)
  *     SQUARE();
@@ -25,7 +28,7 @@
  * Turtles
  * -------
  *
- * Every rule is executed in the context of a turtle (I chose the name since
+ * Every rule is executed in the context of a turtle (I use this name since
  * this is similar to the turtle in the LOGO language).  A turtle possess a
  * 4x4 transformation matrix that represents its position, rotation and scale.
  * It also has a color and a set of flags and variables that can be set by the
@@ -148,6 +151,35 @@
  * can also refer to the doc at:
  * http://www.contextfreeart.org/mediawiki/index.php/Shape_adjustment
  *
+ * Rendering calls
+ * ---------------
+ *
+ * All the calls accept extra arguments for the operations to apply before
+ * the rendering is done.
+ *
+ * POLY(n, float (*verts)[3], ...)
+ *     Render a polygon of n vertices.
+ *     // XXX: to implement.
+ *
+ * SQUARE(...)
+ *     Render a square
+ *
+ * CIRCLE(...)
+ *     Render a circle
+ *
+ * RSQUARE(float r, ...)
+ *     Render a rounded square.  r is the max size of the rectangle such
+ *     that the rounded radius will be zero.
+ *
+ * STAR(int n, flaot t, float c, ...)
+ *     Render a star with n branches, t is the flatness of the star,
+ *     c define the center of the branch top.  Sorry this doc is
+ *     no useful, need to add some examples.
+ *
+ * TRIANGLE(...)
+ *     Conveniance for STAR(3, 0, 0)
+ *
+ *
  * Transformation operations
  * -------------------------
  *
@@ -233,6 +265,34 @@
  *      Set the flag value.  If v is not defined, the default is 1.
  */
 
+/* Notes about the implementation
+ * ------------------------------
+ *
+ * Yes, the code is hard to follow, this is what we get from abusing the
+ * C language to fake coroutines.
+ *
+ * The rules are all really based around a big switch that jumps to the
+ * current state.  This has some important implications in what we can do
+ * inside the rules:
+ *
+ *     - Since the code make heavy use of the __LINE__ macro, it is not
+ *       possible to put two of them on the same line!  So do not write
+ *       something like: FOR(10) { SQUARE(); }.  This might or might not
+ *       work.  In the best case the compiler will refuse to compile.
+ *
+ *     - It is not possible to use local variables.  In fact it is possible,
+ *       but you have to be very careful about it, so don't do it if you
+ *       don't know how this thing work, or until I write a doc about it.
+ *
+ *     - We cannot use switch blocks inside the rules.  This is unfortunate.
+ *       Maybe I will try to find a way to fix this...
+ *
+ *     - However, it is perfectly fine to call any C functions, which is one
+ *       of the advantage over using a script language.
+ *
+ */
+
+
 /* If NOC_TURTLE_DEFINE_NAMES is defined, then we will create default
  * conveniance macros.  If you don't do it, then you have to use the names with
  * NOCTT_ prefix, or define the macros by yourself.
@@ -243,13 +303,13 @@
  * So a common use case would be to enclose your rules with two includes to
  * define and undefine the macros, like this:
  *
- * #define NOC_TURTLE_DEFINE_NAMES
- * #include "noc_turtle.h"
+ *     #define NOC_TURTLE_DEFINE_NAMES
+ *     #include "noc_turtle.h"
  *
- * // All the code here here can use the default names...
+ *     // All the code here here can use the default names...
  *
- * #define NOC_TURTLE_UNDEF_NAME
- * #include "noc_turtle.h"
+ *     #define NOC_TURTLE_UNDEF_NAME
+ *     #include "noc_turtle.h"
  *
  *
  */
@@ -341,6 +401,8 @@
 #include <float.h>
 #include <stdbool.h>
 
+// Maybe I should remove this, and let the client pass a pointer to his own
+// defined structure to hold turtle variables.
 #ifndef NOCTT_NB_VARS
 #   define NOCTT_NB_VARS 0
 #endif
