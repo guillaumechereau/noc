@@ -104,6 +104,18 @@ static DEFINE_RULE(stencil_rule)
     }
 END_RULE
 
+static void colors_rule(noctt_turtle_t *ctx)
+{
+    START
+    TR(SN, X, -0.5, -0.5, S, 1.0 / 64, SAT, 0.5);
+    FOR(64, Y, 1, HUE, 360.0 / 64) {
+        FOR(64, X, 1) {
+            SQUARE(LIGHT, 1, (float)ctx->i / (ctx->n - 1));
+        }
+    }
+    END
+}
+
 #define NOC_TURTLE_UNDEF_NAMES
 #include "noc_turtle.h"
 
@@ -225,6 +237,7 @@ static struct {
     {"press key to see more",    test},
     {"shapes",  shapes_rule},
     {"stencil", stencil_rule},
+    {"colors", colors_rule},
 };
 
 static const nb_rules = sizeof(RULES) / sizeof(RULES[0]);
