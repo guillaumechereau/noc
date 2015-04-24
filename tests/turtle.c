@@ -26,7 +26,9 @@ static gl_prog_t gl_prog;
 #define NOC_TURTLE_DEFINE_NAMES
 #include "noc_turtle.h"
 
-static DEFINE_RULE(spiral_node)
+static void spiral_node(noctt_turtle_t *ctx)
+{
+    START
     SQUARE();
     TR(HUE, pm(0, 5));
     YIELD();
@@ -35,15 +37,21 @@ static DEFINE_RULE(spiral_node)
         SPAWN(spiral_node, R, -90);
     }
     SPAWN(spiral_node, X, 0.4, R, 3, X, 0.4, S, 0.99);
-END_RULE
+    END
+}
 
-static DEFINE_RULE(spiral)
+static void spiral(noctt_turtle_t *ctx)
+{
+    START
     TR(HSL, 1, 0, 1, 0.5);
     CALL(spiral_node);
     CALL(spiral_node, FLIP, 90);
-END_RULE
+    END
+}
 
-static DEFINE_RULE(test_with_stencil)
+static void test_with_stencil(noctt_turtle_t *ctx)
+{
+    START
     TRANSFORM(FLAG, FLAG_STENCIL_WRITE) {
         SQUARE(LIGHT, -0.5);
         CIRCLE(LIGHT, -0.5, X, 0.5, 0.5, S, 0.5);
@@ -51,9 +59,12 @@ static DEFINE_RULE(test_with_stencil)
     TRANSFORM(FLAG, FLAG, FLAG_STENCIL_FILTER) {
         CIRCLE(X, 0.5);
     }
-END_RULE
+    END
+}
 
-static DEFINE_RULE(test)
+static void test(noctt_turtle_t *ctx)
+{
+    START
     SQUARE(S, 0.9, LIGHT, 0.2);
     SQUARE(S, 0.9, G, -1, LIGHT, 0.1);
     TR(SN, LIGHT, 1);
@@ -75,7 +86,8 @@ static DEFINE_RULE(test)
     CALL(test_with_stencil, S, 0.2, X, -2, -1);
 
     CALL(spiral, Y, -0.5, S, 0.02);
-END_RULE
+    END
+}
 
 static void shapes_rule(noctt_turtle_t *ctx)
 {
@@ -93,7 +105,9 @@ static void shapes_rule(noctt_turtle_t *ctx)
     END
 }
 
-static DEFINE_RULE(stencil_rule)
+static void stencil_rule(noctt_turtle_t *ctx)
+{
+    START
     TR(SN, S, 0.5, LIGHT, 0.5);
     TRANSFORM(FLAG, FLAG_STENCIL_WRITE) {
         SQUARE();
@@ -102,7 +116,8 @@ static DEFINE_RULE(stencil_rule)
     TRANSFORM(FLAG, FLAG, FLAG_STENCIL_FILTER) {
         CIRCLE(X, 0.5, LIGHT, 0.5);
     }
-END_RULE
+    END
+}
 
 static void colors_rule(noctt_turtle_t *ctx)
 {

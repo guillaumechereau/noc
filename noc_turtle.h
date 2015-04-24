@@ -18,12 +18,14 @@
  * A rule is defined as a C function that takes a noctt_turtle_t object as
  * argument.  Since all the rules are actually coroutine relying on macros
  * to hide the dirty details, you have to enclose the code with a START and
- * END.  As a convenience, you can use the DEFINE_RULE macro.  Here is a
- * basic rule that just renders a square:
+ * END.  Here is a basic rule that just renders a square:
  *
- * static DEFINE_RULE(my_rule)
- *     SQUARE();
- * END_RULE
+ *     void my_rule(noctt_turtle_t *ctx)
+ *     {
+ *         START
+ *         SQUARE();
+ *         END
+ *     }
  *
  * Turtles
  * -------
@@ -69,19 +71,25 @@
  * timing, we need to use the YIELD macro, that tell the turtle to wait one
  * iteration before proceeding with the rest of the rule.
  *
- *     DEFINE_RULE(a_rule)
+ *     void a_rule(noctt_turtle_t *ctx)
+ *     {
+ *         START
  *         SQUARE();
  *         YIELD();
  *         SQUARE(S, 0.8, LIGHT, -0.5);
- *     END_RULE
+ *         END
+ *     }
  *
- *     DEFINE_RULE(main_rule)
+ *     void main_rule(noctt_turtle_t *ctx)
+ *     {
+  *        START
  *         // Create a new turtle from the current one, scale it, and make it
  *         // process the rule 'a_rule'.
  *         SPAWN(a_rule, S, 0.5);
  *         // The rest of the current rule will run in parallel to a_rule.
  *         ...
- *     END_RULE
+ *         END
+ *     }
  *
  * An other way is to use the TRANSFORM_SPAWN macro, that runs a block in
  * the context of the new turtle.
@@ -335,14 +343,11 @@
 #undef FLAG
 
 #undef TR
-#undef RULE
 #undef START
 #undef END
 #undef YIELD
 #undef CALL
 #undef SPAWN
-#undef DEFINE_RULE
-#undef END_RULE
 
 #undef SQUARE
 #undef RSQUARE
@@ -376,14 +381,11 @@
 #define FLAG    NOCTT_FLAG
 
 #define TR(...)       NOCTT_TR(__VA_ARGS__)
-#define RULE(...)     NOCTT_RULE(__VA_ARGS__)
 #define START         NOCTT_START
 #define END           NOCTT_END
 #define YIELD(...)    NOCTT_YIELD(__VA_ARGS__)
 #define CALL(...)     NOCTT_CALL(__VA_ARGS__)
 #define SPAWN(...)    NOCTT_SPAWN(__VA_ARGS__)
-#define DEFINE_RULE(...)   NOCTT_DEFINE_RULE(__VA_ARGS__)
-#define END_RULE      NOCTT_END_RULE
 
 #define SQUARE(...)            NOCTT_SQUARE(__VA_ARGS__)
 #define RSQUARE(...)           NOCTT_RSQUARE(__VA_ARGS__)
@@ -500,7 +502,6 @@ enum {
         const float ops_[] = {__VA_ARGS__}; \
         noctt_tr(ctx, sizeof(ops_) / sizeof(float), ops_); \
     } while (0)
-#define NOCTT_RULE(rule) void rule(noctt_turtle_t *ctx)
 
 #define NOCTT_START \
     switch (ctx->step) {          \
@@ -508,14 +509,6 @@ enum {
 
 #define NOCTT_END   \
         NOCTT_KILL; \
-    }
-
-#define NOCTT_DEFINE_RULE(name) \
-    NOCTT_RULE(name) { \
-        NOCTT_START
-
-#define NOCTT_END_RULE \
-    NOCTT_END \
     }
 
 #define NOCTT_PRIMITIVE_(func, ...) do { \
