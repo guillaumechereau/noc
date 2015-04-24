@@ -501,7 +501,7 @@ void noctt_circle(const noctt_turtle_t *ctx)
     noctt_poly(ctx, CIRCLE_NB, poly);
 }
 
-void noctt_star(const noctt_turtle_t *ctx, int n, int t, int c)
+void noctt_star(const noctt_turtle_t *ctx, int n, float t, float c)
 {
     float a;
     int i;

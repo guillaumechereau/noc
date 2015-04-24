@@ -171,7 +171,7 @@
  *     Render a rounded square.  r is the max size of the rectangle such
  *     that the rounded radius will be zero.
  *
- * STAR(int n, flaot t, float c, ...)
+ * STAR(int n, float t, float c, ...)
  *     Render a star with n branches, t is the flatness of the star,
  *     c define the center of the branch top.  Sorry this doc is
  *     no useful, need to add some examples.
@@ -618,7 +618,7 @@ enum {
 void noctt_square(const noctt_turtle_t *ctx);
 void noctt_rsquare(const noctt_turtle_t *ctx, float r);
 void noctt_circle(const noctt_turtle_t *ctx);
-void noctt_star(const noctt_turtle_t *ctx, int n, int t, int c);
+void noctt_star(const noctt_turtle_t *ctx, int n, float t, float c);
 
 void noctt_kill(noctt_turtle_t *ctx);
 void noctt_tr(noctt_turtle_t *ctx, int n, const float *ops);
