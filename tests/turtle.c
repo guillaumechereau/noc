@@ -9,9 +9,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-static const int W = 640;
-static const int H = 480;
-
 enum {
     FLAG_STENCIL_WRITE  = 1 << 0,
     FLAG_STENCIL_FILTER = 1 << 1,
@@ -78,6 +75,33 @@ static DEFINE_RULE(test)
     CALL(test_with_stencil, S, 0.2, X, -2, -1);
 
     CALL(spiral, Y, -0.5, S, 0.02);
+END_RULE
+
+static void shapes_rule(noctt_turtle_t *ctx)
+{
+    const noctt_vec3_t poly[] = {
+        {-0.5, -0.5}, {0, -0.5}, {0.5, 0.5}, {-0.5, 0.5}};
+    START
+    TR(LIGHT, 1, S, 1.0 / 3, SN);
+    SQUARE(             X, -1,  1, S, 0.9);
+    CIRCLE(             X,  0,  1, S, 0.9);
+    RSQUARE(80,         X,  1,  1, S, 0.9);
+    TRIANGLE(           X, -1,  0, S, 0.9);
+    STAR(5, 0.3, 0,     X,  0,  0, S, 0.9);
+    STAR(8, 0.2, 0.9,   X,  1,  0, S, 0.9);
+    POLY(4, poly,       X, -1, -1, S, 0.9);
+    END
+}
+
+static DEFINE_RULE(stencil_rule)
+    TR(SN, S, 0.5, LIGHT, 0.5);
+    TRANSFORM(FLAG, FLAG_STENCIL_WRITE) {
+        SQUARE();
+        CIRCLE(X, 0.5, 0.5, S, 0.5);
+    }
+    TRANSFORM(FLAG, FLAG, FLAG_STENCIL_FILTER) {
+        CIRCLE(X, 0.5, LIGHT, 0.5);
+    }
 END_RULE
 
 #define NOC_TURTLE_UNDEF_NAMES
@@ -170,7 +194,7 @@ static void hsl_to_rgb(const float hsl[3], float rgb[3])
     rgb[2] = b + m;
 }
 
-static void render_callback(int n, float (*poly)[3], const float color[4],
+static void render_callback(int n, const noctt_vec3_t *poly, const float color[4],
                             unsigned int flags, void *user_data)
 {
     float rgba[4];
@@ -194,32 +218,61 @@ static void render_callback(int n, float (*poly)[3], const float color[4],
     glDrawArrays(GL_TRIANGLE_FAN, 0, n);
 }
 
+static struct {
+    const char          *name;
+    noctt_rule_func_t   rule;
+} RULES[] = {
+    {"press key to see more",    test},
+    {"shapes",  shapes_rule},
+    {"stencil", stencil_rule},
+};
+
+static const nb_rules = sizeof(RULES) / sizeof(RULES[0]);
+static int rule_index = 0;
+static noctt_prog_t *prog = NULL;
+static GLFWwindow *window;
+
+static void start_demo(int index)
+{
+    float mat[16] = {1, 0, 0, 0,
+                     0, 1, 0, 0,
+                     0, 0, 1, 0,
+                     0, 0, 0, 1};
+    int w, h;
+    if (prog) noctt_prog_delete(prog);
+    glfwGetWindowSize(window, &w, &h);
+    mat_scale(mat, w, h, 1);
+    prog = noctt_prog_create(RULES[index].rule, 256, 0, mat, 1);
+    prog->render_callback = render_callback;
+    prog->render_callback_data = NULL;
+    glfwSetWindowTitle(window, RULES[index].name);
+    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+static void key_callback(GLFWwindow* window,
+                         int key, int scancode, int action, int mods)
+{
+    if (action != GLFW_PRESS) return;
+    rule_index = (rule_index + 1) % nb_rules;
+    start_demo(rule_index);
+}
 
 int main()
 {
     int i;
     int r;
-    noctt_prog_t *prog;
-    float mat[16] = {1, 0, 0, 0,
-                     0, 1, 0, 0,
-                     0, 0, 1, 0,
-                     0, 0, 0, 1};
+    int w = 640, h = 480;
 
-    GLFWwindow *window;
     glfwInit();
 
     glfwWindowHint(GLFW_SAMPLES, 2);
-    window = glfwCreateWindow(W, H, "test", NULL, NULL);
+    window = glfwCreateWindow(w, h, "test", NULL, NULL);
     glfwMakeContextCurrent(window);
+    glfwSetKeyCallback(window, key_callback);
     glewInit();
 
-    init_opengl(W, H);
-
-    mat_scale(mat, W, H, 1);
-
-    prog = noctt_prog_create(test, 256, 0, mat, 1);
-    prog->render_callback = render_callback;
-    prog->render_callback_data = NULL;
+    init_opengl(w, h);
+    start_demo(0);
 
     while (!glfwWindowShouldClose(window)) {
         noctt_prog_iter(prog);

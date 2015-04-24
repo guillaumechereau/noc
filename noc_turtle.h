@@ -104,7 +104,7 @@
  * to provide a callback that will be called each time a render operation
  * is executed.  The signature of the callback is:
  *
- * void *callback(int n, float (*poly)[3],
+ * void *callback(int n, const noctt_vec3_t *poly,
  *                const float color[4],
  *                unsigned int flags, void *user_data);
  *
@@ -349,6 +349,7 @@
 #undef CIRCLE
 #undef STAR
 #undef TRIANGLE
+#undef POLY
 #undef TRANSFORM_SPAWN
 #undef TRANSFORM
 #undef FOR
@@ -389,6 +390,7 @@
 #define CIRCLE(...)            NOCTT_CIRCLE(__VA_ARGS__)
 #define STAR(...)              NOCTT_STAR(__VA_ARGS__)
 #define TRIANGLE(...)          NOCTT_TRIANGLE(__VA_ARGS__)
+#define POLY(...)              NOCTT_POLY(__VA_ARGS__)
 #define TRANSFORM_SPAWN(...)   NOCTT_TRANSFORM_SPAWN(__VA_ARGS__)
 #define TRANSFORM(...)         NOCTT_TRANSFORM(__VA_ARGS__)
 #define FOR(...)               NOCTT_FOR(__VA_ARGS__)
@@ -406,6 +408,10 @@
 #ifndef NOCTT_NB_VARS
 #   define NOCTT_NB_VARS 0
 #endif
+
+typedef struct {
+    float x, y, z;
+} noctt_vec3_t;
 
 typedef struct noctt_turtle noctt_turtle_t;
 typedef void (*noctt_rule_func_t)(noctt_turtle_t*);
@@ -527,6 +533,8 @@ enum {
     NOCTT_PRIMITIVE_(noctt_circle(&ctx_), __VA_ARGS__)
 #define NOCTT_STAR(n, t, c, ...) \
     NOCTT_PRIMITIVE_(noctt_star(&ctx_, n, t, c), __VA_ARGS__)
+#define NOCTT_POLY(n, p, ...) \
+    NOCTT_PRIMITIVE_(noctt_poly(&ctx_, n, p), __VA_ARGS__)
 #define NOCTT_TRIANGLE(...)    NOCTT_STAR(3, 0, 0, ##__VA_ARGS__)
 
 #define NOCTT_YIELD(...) do { \
@@ -619,12 +627,13 @@ void noctt_square(const noctt_turtle_t *ctx);
 void noctt_rsquare(const noctt_turtle_t *ctx, float r);
 void noctt_circle(const noctt_turtle_t *ctx);
 void noctt_star(const noctt_turtle_t *ctx, int n, float t, float c);
+void noctt_poly(const noctt_turtle_t *ctx, int n, const noctt_vec3_t *poly);
 
 void noctt_kill(noctt_turtle_t *ctx);
 void noctt_tr(noctt_turtle_t *ctx, int n, const float *ops);
 void noctt_clone(noctt_turtle_t *ctx, int mode, int n, const float *ops);
 
-typedef void (*noctt_render_func_t)(int n, float (*poly)[3],
+typedef void (*noctt_render_func_t)(int n, const noctt_vec3_t *poly,
                                     const float color[4],
                                     unsigned int flags, void *user_data);
 

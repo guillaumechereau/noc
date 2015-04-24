@@ -12,8 +12,6 @@
 #define min(x, y) ((x) <= (y) ? (x) : (y))
 #define max(x, y) ((x) >= (y) ? (x) : (y))
 
-typedef float vec3_t[3];
-typedef float vec2_t[2];
 
 // Some matrix functions.
 
@@ -80,17 +78,19 @@ static void mat_rotate(float m[16], float a, float x, float y, float z)
     mat_mult(m, tmp);
 }
 
-static void mat_mul_vec(const float m[16], const float v[2], float out[3])
+static noctt_vec3_t mat_mul_vec(const float m[16], const noctt_vec3_t v)
 {
     int i, j;
-    float v4[4] = {v[0], v[1], 0, 1};
+    float v4[4] = {v.x, v.y, v.z, 1};
+    float ret[3];
 
     for (i = 0; i < 3; i++) {
-        out[i] = 0;
+        ret[i] = 0;
         for (j = 0; j < 4; j++) {
-            out[i] += m[j * 4 + i] * v4[j];
+            ret[i] += m[j * 4 + i] * v4[j];
         }
     }
+    return (noctt_vec3_t){ret[0], ret[1], ret[2]};
 }
 
 // Keep a global ref to the current running procedural program.
@@ -429,7 +429,7 @@ float pm(float x, float a)
     return noctt_frand(x - a, x + a);
 }
 
-static void render(int n, float (*poly)[3], const float color[4],
+static void render(int n, const noctt_vec3_t *poly, const float color[4],
                    unsigned int flags)
 {
     if (!current->render_callback) {
@@ -440,19 +440,19 @@ static void render(int n, float (*poly)[3], const float color[4],
                              current->render_callback_data);
 }
 
-void noctt_poly(const noctt_turtle_t *ctx, int n, float (*poly)[2])
+void noctt_poly(const noctt_turtle_t *ctx, int n, const noctt_vec3_t *poly)
 {
-    float (*points)[3] = (vec3_t*)malloc(n * sizeof(*points));
+    noctt_vec3_t *points = (noctt_vec3_t*)malloc(n * sizeof(*points));
     int i;
     for (i = 0; i < n; i++)
-        mat_mul_vec(ctx->mat, poly[i], points[i]);
+        points[i] = mat_mul_vec(ctx->mat, poly[i]);
     render(n, points, ctx->color, ctx->flags);
     free(points);
 }
 
 void noctt_square(const noctt_turtle_t *ctx)
 {
-    float poly[4][2] = {
+    noctt_vec3_t poly[4] = {
         {-0.5, -0.5}, {+0.5, -0.5}, {+0.5, +0.5}, {-0.5, +0.5}
     };
     noctt_poly(ctx, 4, poly);
@@ -463,7 +463,7 @@ void noctt_rsquare(const noctt_turtle_t *ctx, float c)
     const int n = 8;
     float sx, sy, sm, rx, ry, r, aa;
     int a, i;
-    float (*poly)[2];
+    noctt_vec3_t *poly;
 
     sx = ctx->scale[0];
     sy = ctx->scale[1];
@@ -475,11 +475,11 @@ void noctt_rsquare(const noctt_turtle_t *ctx, float c)
                           {-0.5 + rx, +0.5 - ry},
                           {-0.5 + rx, -0.5 + ry},
                           {+0.5 - rx, -0.5 + ry}};
-    poly = (vec2_t*)malloc(4 * n * sizeof(*poly));
+    poly = (noctt_vec3_t*)calloc(4 * n, sizeof(*poly));
     for (i = 0, a = 0; i < 4 * n; i++) {
         aa = a * M_PI / (2 * (n - 1));
-        poly[i][0] = rx * cos(aa) + d[i / n][0];
-        poly[i][1] = ry * sin(aa) + d[i / n][1];
+        poly[i].x = rx * cos(aa) + d[i / n][0];
+        poly[i].y = ry * sin(aa) + d[i / n][1];
         if ((i % n) != (n - 1)) a++;
     }
     noctt_poly(ctx, 4 * n, poly);
@@ -489,13 +489,13 @@ void noctt_rsquare(const noctt_turtle_t *ctx, float c)
 void noctt_circle(const noctt_turtle_t *ctx)
 {
     static const int CIRCLE_NB = 32;
-    static float (*poly)[2] = NULL;
+    static noctt_vec3_t *poly = NULL;
     int i;
     if (!poly) {
-        poly = (vec2_t*)malloc(CIRCLE_NB * sizeof(*poly));
+        poly = (noctt_vec3_t*)calloc(CIRCLE_NB, sizeof(*poly));
         for (i = 0; i < CIRCLE_NB; i++) {
-            poly[i][0] = 0.5f * cos(2 * M_PI * i / CIRCLE_NB);
-            poly[i][1] = 0.5f * sin(2 * M_PI * i / CIRCLE_NB);
+            poly[i].x = 0.5f * cos(2 * M_PI * i / CIRCLE_NB);
+            poly[i].y = 0.5f * sin(2 * M_PI * i / CIRCLE_NB);
         }
     }
     noctt_poly(ctx, CIRCLE_NB, poly);
@@ -505,25 +505,25 @@ void noctt_star(const noctt_turtle_t *ctx, int n, float t, float c)
 {
     float a;
     int i;
-    float (*p)[2];
+    noctt_vec3_t *p;
 
-    p = (vec2_t*)malloc((2 + n * 2) * sizeof(*p));
-    p[0][0] = 0;
-    p[0][1] = 0;
+    p = (noctt_vec3_t*)calloc((2 + n * 2), sizeof(*p));
+    p[0].x = 0;
+    p[0].y = 0;
     // The branch points.
     for (i = 0; i < n + 1; i++) {
         a = i * 2 * M_PI / n;
-        p[1 + 2 * i][0] = 0.5 * cos(a);
-        p[1 + 2 * i][1] = 0.5 * sin(a);
+        p[1 + 2 * i].x = 0.5 * cos(a);
+        p[1 + 2 * i].y = 0.5 * sin(a);
     }
     // The middle points.
     c = (c + 1) / 2;
     for (i = 0; i < n; i++) {
-        p[1 + 2 * i + 1][0] = mix(
-                mix(p[1 + 2 * i][0], p[1 + 2 * (i + 1)][0], c),
+        p[1 + 2 * i + 1].x = mix(
+                mix(p[1 + 2 * i].x, p[1 + 2 * (i + 1)].x, c),
                 0, t);
-        p[1 + 2 * i + 1][1] = mix(
-                mix(p[1 + 2 * i][1], p[1 + 2 * (i + 1)][1], c),
+        p[1 + 2 * i + 1].y = mix(
+                mix(p[1 + 2 * i].y, p[1 + 2 * (i + 1)].y, c),
                 0, t);
     }
     noctt_poly(ctx, 2 + n * 2, p);
