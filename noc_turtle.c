@@ -101,8 +101,8 @@ static void noctt_dead(noctt_turtle_t *ctx) { }
 void noctt_kill(noctt_turtle_t *ctx)
 {
     ctx->func = noctt_dead;
-    ctx->wait = NULL;
     ctx->iflags |= NOCTT_FLAG_DONE;
+    ctx->iflags &= ~NOCTT_FLAG_WAITING;
 }
 
 static int noctt_tr_iter_op(int *n_tot, const float **codes, int *nb)
@@ -295,7 +295,7 @@ void noctt_clone(noctt_turtle_t *ctx, int mode, int n, const float *ops)
 {
     int i;
     noctt_turtle_t *new_turtle = NULL;
-    assert(!ctx->wait);
+    assert(!(ctx->iflags & NOCTT_FLAG_WAITING));
     ctx->iflags &= ~NOCTT_FLAG_JUST_CLONED;
     for (i = 0; i < current->nb; i++) {
         if (current->turtles[i].func == NULL) {
@@ -304,7 +304,8 @@ void noctt_clone(noctt_turtle_t *ctx, int mode, int n, const float *ops)
             new_turtle->iflags |= NOCTT_FLAG_JUST_CLONED;
             noctt_tr(new_turtle, n, ops);
             if (mode == 1) {
-                ctx->wait = new_turtle;
+                ctx->iflags |= NOCTT_FLAG_WAITING;
+                ctx->wait = i;
             }
             current->active++;
             break;
@@ -343,6 +344,12 @@ void noctt_prog_delete(noctt_prog_t *proc)
     free(proc);
 }
 
+static noctt_turtle_t *get_wait(const noctt_turtle_t *ctx)
+{
+    return (ctx->iflags & NOCTT_FLAG_WAITING) ? &current->turtles[ctx->wait]
+                                              : NULL;
+}
+
 static void assert_can_remove(const noctt_turtle_t *ctx)
 {
 #ifdef NDEBUG
@@ -351,7 +358,7 @@ static void assert_can_remove(const noctt_turtle_t *ctx)
     int i;
     for (i = 0; i < current->nb; i++) {
         assert(!current->turtles[i].func ||
-                current->turtles[i].wait != ctx);
+                get_wait(&current->turtles[i]) != ctx);
     }
 }
 
@@ -369,10 +376,10 @@ static bool iter_context(noctt_turtle_t *ctx)
     if (ctx->iflags & NOCTT_FLAG_DONE)
         return true;
 
-    if (ctx->wait && (ctx->wait->func == noctt_dead))
-        ctx->wait = NULL;
-    if (ctx->wait) {
-        if (ctx->wait->iflags & NOCTT_FLAG_DONE)
+    if (get_wait(ctx) && (get_wait(ctx)->func == noctt_dead))
+        ctx->iflags &= ~NOCTT_FLAG_WAITING;
+    if (get_wait(ctx)) {
+        if (get_wait(ctx)->iflags & NOCTT_FLAG_DONE)
             ctx->iflags |= NOCTT_FLAG_DONE;
         return false;
     }

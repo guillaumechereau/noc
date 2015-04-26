@@ -422,7 +422,7 @@ struct noctt_turtle {
     float               mat[16];
     float               scale[2]; // Should we compute it from the matrix?
     float               color[4];
-    noctt_turtle_t      *wait;
+    int                 wait;    // Index of the turtle we wait for.
     noctt_rule_func_t   func;
     unsigned int        iflags;  // Internal flags.
     unsigned int        flags;   // User defined flags.
@@ -459,6 +459,7 @@ enum {
     NOCTT_FLAG_DONE         = 1 << 0,
     NOCTT_FLAG_JUST_CLONED  = 1 << 1,
     NOCTT_FLAG_BLOCK_DONE   = 1 << 2,
+    NOCTT_FLAG_WAITING      = 1 << 3,
 };
 
 #define NOCTT_OP_START FLT_MAX
