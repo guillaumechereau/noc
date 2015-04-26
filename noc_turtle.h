@@ -580,13 +580,13 @@ enum {
 #define NOCTT_TRANSFORM_SPAWN(...) \
     NOCTT_CLONE(0, ##__VA_ARGS__); \
     if (ctx->iflags & NOCTT_FLAG_JUST_CLONED) \
-        if (ctx->iflags |= ~NOCTT_FLAG_JUST_CLONED, 1) \
+        if ((ctx->iflags &= ~NOCTT_FLAG_JUST_CLONED), 1) \
             NOCTT_RUN_BLOCK_AND_KILL_
 
 #define NOCTT_TRANSFORM(...) \
     NOCTT_CLONE(1, ##__VA_ARGS__); \
     if (ctx->iflags & NOCTT_FLAG_JUST_CLONED) \
-        if (ctx->iflags |= ~NOCTT_FLAG_JUST_CLONED, 1) \
+        if ((ctx->iflags &= ~NOCTT_FLAG_JUST_CLONED), 1) \
             NOCTT_RUN_BLOCK_AND_KILL_
 
 #define NOCTT_FOR(n_, ...) \
