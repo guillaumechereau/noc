@@ -458,8 +458,7 @@ enum {
 enum {
     NOCTT_FLAG_DONE         = 1 << 0,
     NOCTT_FLAG_JUST_CLONED  = 1 << 1,
-    NOCTT_FLAG_BLOCK_DONE   = 1 << 2,
-    NOCTT_FLAG_WAITING      = 1 << 3,
+    NOCTT_FLAG_WAITING      = 1 << 2,
 };
 
 #define NOCTT_OP_START FLT_MAX
@@ -569,14 +568,19 @@ enum {
     } \
 } while (0)
 
+#define NOCTT_UNIQ_LABEL__(n, line) label_ ## line ## _ ## n
+#define NOCTT_UNIQ_LABEL_(n, line) NOCTT_UNIQ_LABEL__(n, line)
+#define NOCTT_UNIQ_LABEL(n) NOCTT_UNIQ_LABEL_(n, __LINE__)
 #define NOCTT_RUN_BLOCK_AND_KILL_ \
-    for (ctx->iflags &= ~NOCTT_FLAG_BLOCK_DONE; ; \
-         ctx->iflags |= NOCTT_FLAG_BLOCK_DONE) \
-        if (ctx->iflags & NOCTT_FLAG_BLOCK_DONE) { \
-            noctt_kill(ctx); \
-            return; \
-        } \
-        else
+    if (1) goto NOCTT_UNIQ_LABEL(0); \
+    else \
+        while (1) \
+            if (1) { \
+                noctt_kill(ctx); \
+                return; \
+            } \
+            else \
+                NOCTT_UNIQ_LABEL(0):
 
 #define NOCTT_TRANSFORM_SPAWN(...) \
     NOCTT_CLONE(0, ##__VA_ARGS__); \
