@@ -30,9 +30,9 @@ static void spiral_node(noctt_turtle_t *ctx)
 {
     START
     SQUARE();
-    TR(HUE, pm(0, 5));
+    TR(HUE, PM(0, 5));
     YIELD();
-    if (brand(0.01)) {
+    if (BRAND(0.01)) {
         TR(FLIP, 0);
         SPAWN(spiral_node, R, -90);
     }

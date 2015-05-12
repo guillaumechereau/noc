@@ -415,25 +415,25 @@ void noctt_prog_iter(noctt_prog_t *proc)
     }
 }
 
-static int noctt_rand()
+int noctt_rand(noctt_turtle_t *ctx)
 {
     current->rand_next = current->rand_next * 1103515245 + 12345;
     return((unsigned)(current->rand_next/65536) % 32768);
 }
 
-static float noctt_frand(float min, float max)
+float noctt_frand(noctt_turtle_t *ctx, float min, float max)
 {
-    return min + (noctt_rand() % 4096) / 4096. * (max - min);
+    return min + (noctt_rand(ctx) % 4096) / 4096. * (max - min);
 }
 
-bool brand(float x)
+bool noctt_brand(noctt_turtle_t *ctx, float x)
 {
-    return noctt_frand(0, 1) <= x;
+    return noctt_frand(ctx, 0, 1) <= x;
 }
 
-float pm(float x, float a)
+float noctt_pm(noctt_turtle_t *ctx, float x, float a)
 {
-    return noctt_frand(x - a, x + a);
+    return noctt_frand(ctx, x - a, x + a);
 }
 
 static void render(int n, const noctt_vec3_t *poly, const float color[4],

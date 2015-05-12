@@ -359,6 +359,10 @@
 #undef TRANSFORM
 #undef FOR
 
+#undef PM
+#undef BRAND
+#undef FRAND
+
 #elif defined NOC_TURTLE_DEFINE_NAMES
 
 #define S       NOCTT_S
@@ -396,6 +400,10 @@
 #define TRANSFORM_SPAWN(...)   NOCTT_TRANSFORM_SPAWN(__VA_ARGS__)
 #define TRANSFORM(...)         NOCTT_TRANSFORM(__VA_ARGS__)
 #define FOR(...)               NOCTT_FOR(__VA_ARGS__)
+
+#define PM(x_, y_)    noctt_pm(ctx, x_, y_)
+#define BRAND(x_)     noctt_brand(ctx, x_)
+#define FRAND()       noctt_frand(ctx)
 
 #endif
 
@@ -647,8 +655,9 @@ typedef struct noctt_prog {
     noctt_turtle_t      turtles[];
 } noctt_prog_t;
 
-bool brand(float x);
-float pm(float x, float a);
+float noctt_frand(noctt_turtle_t *ctx, float a, float b);
+bool noctt_brand(noctt_turtle_t *ctx, float x);
+float noctt_pm(noctt_turtle_t *ctx, float x, float a);
 
 noctt_prog_t *noctt_prog_create(noctt_rule_func_t rule, int nb,
                                 int seed, float rect[16], float pixel_size);
