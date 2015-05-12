@@ -93,9 +93,6 @@ static noctt_vec3_t mat_mul_vec(const float m[16], const noctt_vec3_t v)
     return (noctt_vec3_t){ret[0], ret[1], ret[2]};
 }
 
-// Keep a global ref to the current running procedural program.
-static noctt_prog_t *current = NULL;
-
 static void noctt_dead(noctt_turtle_t *ctx) { }
 
 void noctt_kill(noctt_turtle_t *ctx)
@@ -146,8 +143,8 @@ static void scale_normalize(noctt_turtle_t *ctx)
 static void grow(noctt_turtle_t *ctx, float x, float y)
 {
     float sx, sy, kx, ky;
-    sx = ctx->scale[0] / current->pixel_size;
-    sy = ctx->scale[1] / current->pixel_size;
+    sx = ctx->scale[0] / ctx->prog->pixel_size;
+    sy = ctx->scale[1] / ctx->prog->pixel_size;
     kx = (2 * x + sx) / sx;
     ky = (2 * y + sy) / sy;
     scale(ctx, kx, ky, 1);
@@ -297,9 +294,9 @@ void noctt_clone(noctt_turtle_t *ctx, int mode, int n, const float *ops)
     noctt_turtle_t *new_turtle = NULL;
     assert(!(ctx->iflags & NOCTT_FLAG_WAITING));
     ctx->iflags &= ~NOCTT_FLAG_JUST_CLONED;
-    for (i = 0; i < current->nb; i++) {
-        if (current->turtles[i].func == NULL) {
-            new_turtle = &current->turtles[i];
+    for (i = 0; i < ctx->prog->nb; i++) {
+        if (ctx->prog->turtles[i].func == NULL) {
+            new_turtle = &ctx->prog->turtles[i];
             *new_turtle = *ctx;
             new_turtle->iflags |= NOCTT_FLAG_JUST_CLONED;
             noctt_tr(new_turtle, n, ops);
@@ -307,7 +304,7 @@ void noctt_clone(noctt_turtle_t *ctx, int mode, int n, const float *ops)
                 ctx->iflags |= NOCTT_FLAG_WAITING;
                 ctx->wait = i;
             }
-            current->active++;
+            ctx->prog->active++;
             break;
         }
     }
@@ -329,6 +326,7 @@ noctt_prog_t *noctt_prog_create(noctt_rule_func_t rule, int nb, int seed,
     ctx = &proc->turtles[0];
     ctx->color[3] = 1;
     ctx->func = rule;
+    ctx->prog = proc;
     mat_set_identity(ctx->mat);
     if (mat)
         mat_mult(ctx->mat, mat);
@@ -346,7 +344,7 @@ void noctt_prog_delete(noctt_prog_t *proc)
 
 static noctt_turtle_t *get_wait(const noctt_turtle_t *ctx)
 {
-    return (ctx->iflags & NOCTT_FLAG_WAITING) ? &current->turtles[ctx->wait]
+    return (ctx->iflags & NOCTT_FLAG_WAITING) ? &ctx->prog->turtles[ctx->wait]
                                               : NULL;
 }
 
@@ -356,9 +354,9 @@ static void assert_can_remove(const noctt_turtle_t *ctx)
     return;
 #endif
     int i;
-    for (i = 0; i < current->nb; i++) {
-        assert(!current->turtles[i].func ||
-                get_wait(&current->turtles[i]) != ctx);
+    for (i = 0; i < ctx->prog->nb; i++) {
+        assert(!ctx->prog->turtles[i].func ||
+                get_wait(&ctx->prog->turtles[i]) != ctx);
     }
 }
 
@@ -367,7 +365,7 @@ static bool iter_context(noctt_turtle_t *ctx)
     if (ctx->func == noctt_dead) {
         assert_can_remove(ctx);
         ctx->func = NULL;
-        current->active--;
+        ctx->prog->active--;
     }
 
     if (!ctx->func)
@@ -384,8 +382,8 @@ static bool iter_context(noctt_turtle_t *ctx)
         return false;
     }
 
-    if (    fabs(ctx->scale[0]) <= current->min_scale ||
-            fabs(ctx->scale[0]) <= current->min_scale) {
+    if (    fabs(ctx->scale[0]) <= ctx->prog->min_scale ||
+            fabs(ctx->scale[0]) <= ctx->prog->min_scale) {
         noctt_kill(ctx);
         return true;
     }
@@ -400,7 +398,6 @@ void noctt_prog_iter(noctt_prog_t *proc)
 {
     int i;
     bool keep_going = true;
-    current = proc;
 
     for (i = 0; i < proc->nb; i++)
         proc->turtles[i].iflags &= ~NOCTT_FLAG_DONE;
@@ -417,8 +414,8 @@ void noctt_prog_iter(noctt_prog_t *proc)
 
 int noctt_rand(noctt_turtle_t *ctx)
 {
-    current->rand_next = current->rand_next * 1103515245 + 12345;
-    return((unsigned)(current->rand_next/65536) % 32768);
+    ctx->prog->rand_next = ctx->prog->rand_next * 1103515245 + 12345;
+    return((unsigned)(ctx->prog->rand_next/65536) % 32768);
 }
 
 float noctt_frand(noctt_turtle_t *ctx, float min, float max)
@@ -436,15 +433,15 @@ float noctt_pm(noctt_turtle_t *ctx, float x, float a)
     return noctt_frand(ctx, x - a, x + a);
 }
 
-static void render(int n, const noctt_vec3_t *poly, const float color[4],
-                   unsigned int flags)
+static void render(const noctt_turtle_t *ctx, int n, const noctt_vec3_t *poly,
+                   const float color[4], unsigned int flags)
 {
-    if (!current->render_callback) {
+    if (!ctx->prog->render_callback) {
         printf("ERROR: need to set a render callback\n");
         assert(0);
     }
-    current->render_callback(n, poly, color, flags,
-                             current->render_callback_data);
+    ctx->prog->render_callback(n, poly, color, flags,
+                               ctx->prog->render_callback_data);
 }
 
 void noctt_poly(const noctt_turtle_t *ctx, int n, const noctt_vec3_t *poly)
@@ -453,7 +450,7 @@ void noctt_poly(const noctt_turtle_t *ctx, int n, const noctt_vec3_t *poly)
     int i;
     for (i = 0; i < n; i++)
         points[i] = mat_mul_vec(ctx->mat, poly[i]);
-    render(n, points, ctx->color, ctx->flags);
+    render(ctx, n, points, ctx->color, ctx->flags);
     free(points);
 }
 

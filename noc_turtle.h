@@ -425,8 +425,10 @@ typedef struct {
 
 typedef struct noctt_turtle noctt_turtle_t;
 typedef void (*noctt_rule_func_t)(noctt_turtle_t*);
+typedef struct noctt_prog noctt_prog_t;
 
 struct noctt_turtle {
+    noctt_prog_t        *prog;
     float               mat[16];
     float               scale[2]; // Should we compute it from the matrix?
     float               color[4];
@@ -643,7 +645,7 @@ typedef void (*noctt_render_func_t)(int n, const noctt_vec3_t *poly,
                                     const float color[4],
                                     unsigned int flags, void *user_data);
 
-typedef struct noctt_prog {
+struct noctt_prog {
     int                 nb;         // total number of turtles.
     int                 active;     // number of active turtles.
     unsigned long       rand_next;
@@ -653,7 +655,7 @@ typedef struct noctt_prog {
     // Kill context if x or y scale get below this value.
     float               min_scale;
     noctt_turtle_t      turtles[];
-} noctt_prog_t;
+};
 
 float noctt_frand(noctt_turtle_t *ctx, float a, float b);
 bool noctt_brand(noctt_turtle_t *ctx, float x);
