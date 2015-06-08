@@ -403,7 +403,7 @@
 
 #define PM(x_, y_)    noctt_pm(ctx, x_, y_)
 #define BRAND(x_)     noctt_brand(ctx, x_)
-#define FRAND()       noctt_frand(ctx)
+#define FRAND(a_, b_) noctt_frand(ctx, a_, b_)
 
 #endif
 
@@ -416,7 +416,7 @@
 // Maybe I should remove this, and let the client pass a pointer to his own
 // defined structure to hold turtle variables.
 #ifndef NOCTT_NB_VARS
-#   define NOCTT_NB_VARS 0
+#   define NOCTT_NB_VARS 3
 #endif
 
 typedef struct {
@@ -612,7 +612,7 @@ enum {
         ctx->n = ctx->tmp; \
         for (ctx->i = 0; ctx->i < ctx->n; ctx->i++) { \
             ctx->step = NOCTT_MARKER(2, 1); \
-            noctt_clone(ctx, 1, 0, NULL); \
+            noctt_clone(ctx, 1, 0, 0); \
             NOCTT_TR(__VA_ARGS__); \
             return; \
             case NOCTT_MARKER(2, 0):; \

@@ -14,6 +14,7 @@
 enum {
     FLAG_STENCIL_WRITE  = 1 << 0,
     FLAG_STENCIL_FILTER = 1 << 1,
+    FLAG_EFFECT_LIGHT   = 1 << 2,
 };
 
 typedef struct {
@@ -33,6 +34,9 @@ static gl_prog_t gl_prog;
     noctt_vec3_t pos = noctt_get_pos(ctx); \
     font_draw_text(pos.x, pos.y, msg); \
 }
+
+// Defined in blowfish_city.c
+void blowfish_city_rule(noctt_turtle_t *ctx);
 
 static void spiral_node(noctt_turtle_t *ctx)
 {
@@ -124,7 +128,7 @@ static void stencil_rule(noctt_turtle_t *ctx)
         SQUARE();
         CIRCLE(X, 0.5, 0.5, S, 0.5);
     }
-    TRANSFORM(FLAG, FLAG, FLAG_STENCIL_FILTER) {
+    TRANSFORM(FLAG, FLAG_STENCIL_FILTER) {
         CIRCLE(X, 0.5, LIGHT, 0.5);
     }
     END
@@ -247,6 +251,13 @@ static void render_callback(int n, const noctt_vec3_t *poly, const float color[4
         } else {
             glDisable(GL_STENCIL_TEST);
         }
+
+        if (flags & FLAG_EFFECT_LIGHT) {
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_DST_COLOR, GL_SRC_COLOR);
+        } else {
+            glDisable(GL_BLEND);
+        }
         current_flags = flags;
     }
     hsl_to_rgb(color, rgba);
@@ -264,6 +275,7 @@ static struct {
     {"shapes",  shapes_rule},
     {"stencil", stencil_rule},
     {"colors", colors_rule},
+    {"blowfish", blowfish_city_rule},
 };
 
 static const nb_rules = sizeof(RULES) / sizeof(RULES[0]);
