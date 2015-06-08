@@ -631,6 +631,7 @@ enum {
 
 #define NOCTT_KILL do { noctt_kill(ctx); return; } while(0)
 
+noctt_vec3_t noctt_get_pos(const noctt_turtle_t *ctx);
 void noctt_square(const noctt_turtle_t *ctx);
 void noctt_rsquare(const noctt_turtle_t *ctx, float r);
 void noctt_circle(const noctt_turtle_t *ctx);

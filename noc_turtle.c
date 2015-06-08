@@ -95,6 +95,12 @@ static noctt_vec3_t mat_mul_vec(const float m[16], const noctt_vec3_t v)
 
 static void noctt_dead(noctt_turtle_t *ctx) { }
 
+noctt_vec3_t noctt_get_pos(const noctt_turtle_t *ctx)
+{
+    noctt_vec3_t p = {0, 0, 0};
+    return mat_mul_vec(ctx->mat, p);
+}
+
 void noctt_kill(noctt_turtle_t *ctx)
 {
     ctx->func = noctt_dead;

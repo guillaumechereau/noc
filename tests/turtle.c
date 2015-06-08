@@ -1,4 +1,5 @@
 #include "noc_turtle.h"
+#include "font.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -8,6 +9,7 @@
 #include <string.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+
 
 enum {
     FLAG_STENCIL_WRITE  = 1 << 0,
@@ -25,6 +27,12 @@ static gl_prog_t gl_prog;
 
 #define NOC_TURTLE_DEFINE_NAMES
 #include "noc_turtle.h"
+
+// Defines a custom directive to render text.
+#define TEXT(msg, ...) TRANSFORM(__VA_ARGS__) { \
+    noctt_vec3_t pos = noctt_get_pos(ctx); \
+    font_draw_text(pos.x, pos.y, msg); \
+}
 
 static void spiral_node(noctt_turtle_t *ctx)
 {
@@ -65,6 +73,9 @@ static void test_with_stencil(noctt_turtle_t *ctx)
 static void test(noctt_turtle_t *ctx)
 {
     START
+
+    TEXT("Press any key to see other demos", X, -0.47, Y, 0.47);
+
     SQUARE(S, 0.9, LIGHT, 0.2);
     SQUARE(S, 0.9, G, -1, LIGHT, 0.1);
     TR(SN, LIGHT, 1);
@@ -290,6 +301,7 @@ int main()
     int i;
     int r;
     int w = 640, h = 480;
+    float proj_mat[16];
 
     glfwInit();
 
@@ -299,11 +311,15 @@ int main()
     glfwSetKeyCallback(window, key_callback);
     glewInit();
 
+    mat_ortho(proj_mat, -w / 2, +w / 2, -h / 2, h / 2, -1, +1);
+    font_init(proj_mat);
     init_opengl(w, h);
     start_demo(0);
 
     while (!glfwWindowShouldClose(window)) {
+        glUseProgram(gl_prog.prog);
         noctt_prog_iter(prog);
+        font_flush();
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
