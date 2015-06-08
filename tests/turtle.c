@@ -104,6 +104,9 @@ static void test(noctt_turtle_t *ctx)
     END
 }
 
+// Defined in tree.c
+void tree_rule(noctt_turtle_t *ctx);
+
 static void shapes_rule(noctt_turtle_t *ctx)
 {
     const noctt_vec3_t poly[] = {
@@ -216,6 +219,9 @@ static void init_opengl(int w, int h)
     glUseProgram(gl_prog.prog);
     mat_ortho(mat, -w / 2, +w / 2, -h / 2, h / 2, -1, +1);
     glUniformMatrix4fv(gl_prog.u_proj_l, 1, 0, mat);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
 }
 
 static void hsl_to_rgb(const float hsl[3], float rgb[3])
@@ -272,6 +278,7 @@ static struct {
     noctt_rule_func_t   rule;
 } RULES[] = {
     {"press key to see more",    test},
+    {"tree" , tree_rule},
     {"shapes",  shapes_rule},
     {"stencil", stencil_rule},
     {"colors", colors_rule},
@@ -330,6 +337,7 @@ int main()
 
     while (!glfwWindowShouldClose(window)) {
         glUseProgram(gl_prog.prog);
+
         noctt_prog_iter(prog);
         font_flush();
         glfwSwapBuffers(window);

@@ -348,6 +348,7 @@
 #undef YIELD
 #undef CALL
 #undef SPAWN
+#undef KILL
 
 #undef SQUARE
 #undef RSQUARE
@@ -390,6 +391,7 @@
 #define YIELD(...)    NOCTT_YIELD(__VA_ARGS__)
 #define CALL(...)     NOCTT_CALL(__VA_ARGS__)
 #define SPAWN(...)    NOCTT_SPAWN(__VA_ARGS__)
+#define KILL()        NOCTT_KILL()
 
 #define SQUARE(...)            NOCTT_SQUARE(__VA_ARGS__)
 #define RSQUARE(...)           NOCTT_RSQUARE(__VA_ARGS__)
@@ -518,7 +520,7 @@ enum {
         case 0:;
 
 #define NOCTT_END   \
-        NOCTT_KILL; \
+        NOCTT_KILL(); \
     }
 
 #define NOCTT_PRIMITIVE_(func, ...) do { \
@@ -629,7 +631,7 @@ enum {
         NOCTT_RUN_BLOCK_AND_KILL_
 
 
-#define NOCTT_KILL do { noctt_kill(ctx); return; } while(0)
+#define NOCTT_KILL() do { noctt_kill(ctx); return; } while(0)
 
 noctt_vec3_t noctt_get_pos(const noctt_turtle_t *ctx);
 void noctt_square(const noctt_turtle_t *ctx);
