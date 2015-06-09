@@ -106,6 +106,8 @@ static void test(noctt_turtle_t *ctx)
 
 // Defined in tree.c
 void tree_rule(noctt_turtle_t *ctx);
+// Defined in modern.c
+void modern_rule(noctt_turtle_t *ctx);
 
 static void shapes_rule(noctt_turtle_t *ctx)
 {
@@ -279,6 +281,7 @@ static struct {
 } RULES[] = {
     {"press key to see more",    test},
     {"tree" , tree_rule},
+    {"modern", modern_rule},
     {"shapes",  shapes_rule},
     {"stencil", stencil_rule},
     {"colors", colors_rule},

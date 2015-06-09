@@ -347,6 +347,7 @@
 #undef END
 #undef YIELD
 #undef CALL
+#undef JUMP
 #undef SPAWN
 #undef KILL
 
@@ -390,6 +391,7 @@
 #define END           NOCTT_END
 #define YIELD(...)    NOCTT_YIELD(__VA_ARGS__)
 #define CALL(...)     NOCTT_CALL(__VA_ARGS__)
+#define JUMP(...)     NOCTT_JUMP(__VA_ARGS__)
 #define SPAWN(...)    NOCTT_SPAWN(__VA_ARGS__)
 #define KILL()        NOCTT_KILL()
 
@@ -568,6 +570,13 @@ enum {
         ctx->step = 0; \
         return; \
     } \
+} while (0)
+
+#define NOCTT_JUMP(rule, ...) do { \
+    TR(__VA_ARGS__); \
+    ctx->func = rule; \
+    ctx->step = 0; \
+    return; \
 } while (0)
 
 #define NOCTT_SPAWN(rule, ...) do { \
