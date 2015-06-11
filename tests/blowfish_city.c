@@ -35,6 +35,26 @@ static void square(noctt_turtle_t *ctx)
     END
 }
 
+static void cloud(noctt_turtle_t *ctx)
+{
+    START
+    TR(A, -0.5, LIGHT, 1);
+    TR(SY, 1.0 / 3, Y, -1, X, -0.5, SN, X, 0.5);
+    TR(LIGHT, 1);
+    FOR(4, X, 2.0 / 3) {
+        CIRCLE(S, FRAND(0.75, 1));
+    }
+    TR(Y, 0.5, X, 1.0 / 3);
+    FOR(3, X, 2.0 / 3) {
+        CIRCLE(S, FRAND(0.75, 1));
+    }
+    TR(Y, 0.25, X, 2.0 / 3);
+    FOR(1, X, 2.0 / 3) {
+        CIRCLE(S, FRAND(0.75, 1));
+    }
+    END
+}
+
 static void sky_line(noctt_turtle_t *ctx)
 {
     int i;
@@ -157,6 +177,8 @@ void blowfish_city_rule(noctt_turtle_t *ctx)
     SQUARE(X, -1);
     SQUARE(X, +1);
     TEXT("Background from the game Blowish Rescue", X, -0.48, Y, 0.47);
+
+    SPAWN(cloud, X, 0.25, 0.25, S, 0.1, SN);
 
     TR(Y, -0.05);
     SQUARE(Y, -0.7, S, 1, 0.4);

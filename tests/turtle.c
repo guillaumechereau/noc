@@ -37,6 +37,8 @@ static gl_prog_t gl_prog;
 
 // Defined in blowfish_city.c
 void blowfish_city_rule(noctt_turtle_t *ctx);
+// Defined in blowfish_objs.c
+void blowfish_objs(noctt_turtle_t *ctx);
 
 static void spiral_node(noctt_turtle_t *ctx)
 {
@@ -280,6 +282,7 @@ static struct {
     noctt_rule_func_t   rule;
 } RULES[] = {
     {"press key to see more",    test},
+    {"blowfish objs", blowfish_objs},
     {"tree" , tree_rule},
     {"modern", modern_rule},
     {"shapes",  shapes_rule},
