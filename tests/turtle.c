@@ -741,6 +741,7 @@ int main()
         glUseProgram(gl_prog.prog);
 
         noctt_prog_iter(prog);
+        assert(glGetError() == GL_NO_ERROR);
         font_flush();
         glfwSwapBuffers(window);
         glfwPollEvents();
