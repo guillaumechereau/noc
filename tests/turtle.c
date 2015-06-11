@@ -25,6 +25,8 @@
  * This file contains a few examples of what we can do with the noc_turtle
  * library.  Some examples are inspired from the game Blowfish Rescue for
  * which I created this library.
+ *
+ * See noc_turtle.h for some documentation about the library.
  */
 
 #include "noc_turtle.h"
@@ -63,22 +65,26 @@ enum {
 
 static void spiral_node(noctt_turtle_t *ctx)
 {
-    START
-    SQUARE();
-    TR(HUE, PM(0, 5));
-    YIELD();
-    if (BRAND(0.01)) {
+    START               // All the rules should start with START
+    SQUARE();           // Render a square at the current pos/size/rot/color.
+    TR(HUE, PM(0, 5));  // Change the color randomly (plus or minus 5).
+    YIELD();            // Wait one iteration.
+    if (BRAND(0.01)) {  // Randomly create a new branch at 90 deg.
         TR(FLIP, 0);
         SPAWN(spiral_node, R, -90);
     }
+    // Continue the branch a bit further.
+    // Note that we do the rotation in between to translations, so that in
+    // effect the center of rotation is at the extremity of the branch.
     SPAWN(spiral_node, X, 0.4, R, 3, X, 0.4, S, 0.99);
-    END
+    END                 // All the rules should end with END
 }
 
 static void spiral(noctt_turtle_t *ctx)
 {
     START
     TR(HSL, 1, 0, 1, 0.5);
+    // Start two spirals at 180 deg.
     CALL(spiral_node);
     CALL(spiral_node, FLIP, 90);
     END
@@ -87,11 +93,18 @@ static void spiral(noctt_turtle_t *ctx)
 static void demo1(noctt_turtle_t *ctx)
 {
     START
-    TEXT("Press any key to see other demos", X, -0.47, Y, 0.47);
-    SQUARE(S, 0.9, LIGHT, 0.2);
-    SQUARE(S, 0.9, G, -1, LIGHT, 0.1);
+    TEXT("Press any key to see the other demos", X, -0.47, Y, 0.47);
+    // Render the background frame with a one pixel border.
+    // Note that we use the z position to makes it bellow the rest of the
+    // scene.
+    SQUARE(S, 0.9, LIGHT, 0.3, Z, -1);
+    SQUARE(S, 0.9, G, -1, LIGHT, 0.1, Z, -1);
+    // Set the color to full light (that is white).
     TR(SN, LIGHT, 1);
 
+    // Render a rounded rect with a fading in animation.
+    // We use spawn, so that the rest of the rule continue without waiting
+    // for the animation to finish.
     TRANSFORM_SPAWN(X, -0.25, 0.25, S, 0.5) {
         FOR(64, G, -2, LIGHT, -0.02) {
             RSQUARE(60, S, 0.5);
@@ -99,6 +112,7 @@ static void demo1(noctt_turtle_t *ctx)
         }
     }
 
+    // Render a few stuffs.
     SQUARE(S, 0.1);
     SQUARE(S, 0.1, X, 2);
     SQUARE(S, 0.1, X, 4, R, 45, LIGHT, -0.5);
@@ -106,17 +120,13 @@ static void demo1(noctt_turtle_t *ctx)
     CIRCLE(S, 0.1, Y, 2);
     TRIANGLE(S, 0.1, Y, 4);
 
-    CALL(spiral, Y, -0.5, S, 0.02);
+    CALL(spiral, Y, -0.5, S, 0.02, Z, -0.5);
     END
 }
 
-// Defined in tree.c
-void tree_rule(noctt_turtle_t *ctx);
-// Defined in modern.c
-void modern_rule(noctt_turtle_t *ctx);
-
 static void shapes_rule(noctt_turtle_t *ctx)
 {
+    // Example with all the basic primitives.
     const noctt_vec3_t poly[] = {
         {-0.5, -0.5}, {0, -0.5}, {0.5, 0.5}, {-0.5, 0.5}};
     START
