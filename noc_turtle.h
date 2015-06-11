@@ -488,6 +488,7 @@ enum {
     NOCTT_FLAG_DONE         = 1 << 0,
     NOCTT_FLAG_JUST_CLONED  = 1 << 1,
     NOCTT_FLAG_WAITING      = 1 << 2,
+    NOCTT_FLAG_BLOCK_DONE   = 1 << 3,
 };
 
 #define NOCTT_OP_START FLT_MAX
@@ -559,8 +560,9 @@ enum {
     NOCTT_PRIMITIVE_(noctt_poly(&turtle_, n, p), __VA_ARGS__)
 #define NOCTT_TRIANGLE(...)    NOCTT_STAR(3, 0, 0, ##__VA_ARGS__)
 
-#define NOCTT_YIELD(...) do { \
-    turtle->tmp = (1, ##__VA_ARGS__); \
+#define NOCTT_COMMA_ ,
+#define NOCTT_YIELD_(_, n_, ...) do { \
+    turtle->tmp = n_; \
     turtle->step = NOCTT_MARKER(0, 1); \
     case NOCTT_MARKER(0, 0):; \
     if (turtle->tmp--) { \
@@ -568,6 +570,8 @@ enum {
         return; \
     } \
 } while (0)
+#define NOCTT_YIELD(...) NOCTT_YIELD_(0, ##__VA_ARGS__, 1)
+
 
 #define NOCTT_CLONE(mode, ...) do { \
     turtle->step = NOCTT_MARKER(0, 1); \
@@ -607,8 +611,10 @@ enum {
 #define NOCTT_UNIQ_LABEL__(n, line) label_ ## line ## _ ## n
 #define NOCTT_UNIQ_LABEL_(n, line) NOCTT_UNIQ_LABEL__(n, line)
 #define NOCTT_UNIQ_LABEL(n) NOCTT_UNIQ_LABEL_(n, __LINE__)
+
+/*
 #define NOCTT_RUN_BLOCK_AND_KILL_ \
-    if (1) goto NOCTT_UNIQ_LABEL(0); \
+    if (1) {goto NOCTT_UNIQ_LABEL(0);} \
     else \
         while (1) \
             if (1) { \
@@ -617,6 +623,15 @@ enum {
             } \
             else \
                 NOCTT_UNIQ_LABEL(0):
+*/
+
+#define NOCTT_RUN_BLOCK_AND_KILL_ \
+    for (turtle->iflags &= ~NOCTT_FLAG_BLOCK_DONE; ; \
+         turtle->iflags |= NOCTT_FLAG_BLOCK_DONE) \
+        if (turtle->iflags & NOCTT_FLAG_BLOCK_DONE) { \
+            noctt_kill(turtle); \
+            return; \
+        } else
 
 #define NOCTT_TRANSFORM_SPAWN(...) \
     NOCTT_CLONE(0, ##__VA_ARGS__); \

@@ -510,10 +510,10 @@ void noctt_rsquare(const noctt_turtle_t *turtle, float c)
     r = max((sm - c) / 2, 0);
     rx = r / sx;
     ry = r / sy;
-    const float d[][2] = {{+0.5 - rx, +0.5 - ry},
-                          {-0.5 + rx, +0.5 - ry},
-                          {-0.5 + rx, -0.5 + ry},
-                          {+0.5 - rx, -0.5 + ry}};
+    const float d[][2] = {{+0.5f - rx, +0.5f - ry},
+                          {-0.5f + rx, +0.5f - ry},
+                          {-0.5f + rx, -0.5f + ry},
+                          {+0.5f - rx, -0.5f + ry}};
     poly = (noctt_vec3_t*)calloc(4 * n, sizeof(*poly));
     for (i = 0, a = 0; i < 4 * n; i++) {
         aa = a * M_PI / (2 * (n - 1));

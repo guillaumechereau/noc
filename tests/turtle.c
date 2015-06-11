@@ -347,7 +347,7 @@ static void tower(noctt_turtle_t *turtle)
     // Sides
     if (BRAND(0.5)) {
         LOOP(n) {
-            SPAWN(square_up, Y, (float)turtle->i / n - 0.4, S, 1.1, 0.1);
+            SPAWN(square_up, Y, (float)turtle->i / n - 0.4f, S, 1.1, 0.1);
         }
     }
 
@@ -719,8 +719,6 @@ static void key_callback(GLFWwindow* window,
 
 int main()
 {
-    int i;
-    int r;
     int w = 640, h = 480;
     float proj_mat[16];
 
