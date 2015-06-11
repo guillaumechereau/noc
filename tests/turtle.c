@@ -106,7 +106,7 @@ static void demo1(noctt_turtle_t *turtle)
     // We use spawn, so that the rest of the rule continue without waiting
     // for the animation to finish.
     TRANSFORM_SPAWN(X, -0.25, 0.25, S, 0.5) {
-        FOR(64, G, -2, LIGHT, -0.02) {
+        LOOP(64, G, -2, LIGHT, -0.02) {
             RSQUARE(60, S, 0.5);
             YIELD(4);
         }
@@ -168,8 +168,8 @@ static void colors_rule(noctt_turtle_t *turtle)
 {
     START
     TR(SN, X, -0.5, -0.5, S, 1.0 / 64, SAT, 0.5);
-    FOR(64, Y, 1, HUE, 360.0 / 64) {
-        FOR(64, X, 1) {
+    LOOP(64, Y, 1, HUE, 360.0 / 64) {
+        LOOP(64, X, 1) {
             SQUARE(LIGHT, 1, (float)turtle->i / (turtle->n - 1));
         }
     }
@@ -182,7 +182,7 @@ static void moon(noctt_turtle_t *turtle)
 {
     START
     CIRCLE(LIGHT, -0.5, G, 2);
-    FOR(32, S, 0.95, LIGHT, 0.01) {
+    LOOP(32, S, 0.95, LIGHT, 0.01) {
         CIRCLE();
         YIELD();
     }
@@ -249,7 +249,7 @@ void modern_rule(noctt_turtle_t *turtle)
     START
     TR(SN, S, 0.2, LIGHT, 1);
     CIRCLE();
-    FOR(4) {
+    LOOP(4) {
         SPAWN(modern_branch, R, PM(0, 180), S, 0.1, X, 1);
     }
     END
@@ -266,7 +266,7 @@ static void square_up(noctt_turtle_t *turtle)
     const float time = 0.1 * sqrtf(turtle->scale[1]);
     const int nb = time * 50;
     START
-    FOR(nb) {
+    LOOP(nb) {
         k = turtle->i / (turtle->n - 1.0);
         SQUARE(Y, -0.5, S, 1, k, Y, 0.5);
         YIELD(1);
@@ -281,15 +281,15 @@ static void cloud(noctt_turtle_t *turtle)
     TR(A, -0.5, LIGHT, 1);
     TR(SY, 1.0 / 3, Y, -1, X, -0.5, SN, X, 0.5);
     TR(LIGHT, 1);
-    FOR(4, X, 2.0 / 3) {
+    LOOP(4, X, 2.0 / 3) {
         CIRCLE(S, FRAND(0.75, 1));
     }
     TR(Y, 0.5, X, 1.0 / 3);
-    FOR(3, X, 2.0 / 3) {
+    LOOP(3, X, 2.0 / 3) {
         CIRCLE(S, FRAND(0.75, 1));
     }
     TR(Y, 0.25, X, 2.0 / 3);
-    FOR(1, X, 2.0 / 3) {
+    LOOP(1, X, 2.0 / 3) {
         CIRCLE(S, FRAND(0.75, 1));
     }
     END
@@ -299,7 +299,7 @@ static void city_noise(noctt_turtle_t *turtle)
 {
     START
     TR(FLAG, FLAG_EFFECT_LIGHT, SAT, -1, LIGHT, 1, 0.5);
-    FOR(1000) {
+    LOOP(1000) {
         TR(X, PM(0, 0.5), PM(0, 0.5));
         TR(S, PM(0.02, 0.02), SN, R, FRAND(0, 360));
         SQUARE(LIGHT, PM(0, 0.04));
@@ -318,10 +318,10 @@ static void sky(noctt_turtle_t *turtle)
     TR(SN);
     TR(Y, -0.3);
     // Render the sky lines.
-    FOR(3, Y, 0.3) {
+    LOOP(3, Y, 0.3) {
         TR(X, -0.5, S, sx, 0.2, LIGHT, 0.2);
         for (i = 0; i < 3; i++) turtle->vars[i] = PM(0, 0.5);
-        FOR(1.1 / sx / dx, X, dx, R, PM(0, 0.1), SY, PM(1, 0.01))
+        LOOP(1.1 / sx / dx, X, dx, R, PM(0, 0.1), SY, PM(1, 0.01))
         {
             SQUARE();
             for (i = 0; i < 3; i++)
@@ -346,7 +346,7 @@ static void tower(noctt_turtle_t *turtle)
 
     // Sides
     if (BRAND(0.5)) {
-        FOR(n) {
+        LOOP(n) {
             SPAWN(square_up, Y, (float)turtle->i / n - 0.4, S, 1.1, 0.1);
         }
     }
@@ -356,7 +356,7 @@ static void tower(noctt_turtle_t *turtle)
     // Top
     TRANSFORM(Y, 0.5, S, 0.9, 0.02, Y, 0.5) {
         turtle->vars[0] = FRAND(0, 3);
-        FOR(turtle->vars[0], Y, 1, S, 0.9, 1)
+        LOOP(turtle->vars[0], Y, 1, S, 0.9, 1)
             CALL(square_up);
     }
 
@@ -370,7 +370,7 @@ static void building(noctt_turtle_t *turtle)
 
     // Top
     TRANSFORM(Y, 0.5, S, 0.9, 0.05, Y, 0.5) {
-        FOR(FRAND(0, 3), Y, 1, S, 0.9, 1) {
+        LOOP(FRAND(0, 3), Y, 1, S, 0.9, 1) {
             CALL(square_up);
         }
     }
@@ -380,7 +380,7 @@ static void building(noctt_turtle_t *turtle)
     // Chimneys
     if (BRAND(0.5)) {
         TRANSFORM_SPAWN(X, 0, 0.5, S, 0.1, 0.5, Y, 0.5) {
-            FOR(3, X, 1.5, -0.2) {
+            LOOP(3, X, 1.5, -0.2) {
                 CALL(square_up);
                 CALL(square_up, Y, 0.4, S, 1.2, 0.2, Y, 0.5);
             }
@@ -411,14 +411,14 @@ void blowfish_city_rule(noctt_turtle_t *turtle)
     SQUARE(X, +1);
     TEXT("Background from the game Blowish Rescue", X, -0.48, Y, 0.47);
 
-    FOR(4) {
+    LOOP(4) {
         SPAWN(cloud, X, PM(0, 0.4), PM(0.25, 0.25), S, PM(0.1, 0.05), SN);
     }
 
     TR(Y, -0.05);
     SQUARE(Y, -0.7, S, 1, 0.4);
     TR(Y, -0.5);
-    FOR(20) {
+    LOOP(20) {
         SPAWN(structure, X, FRAND(-0.45, 0.45), S, 1.0 / 30);
         YIELD(1);
     }
@@ -431,7 +431,7 @@ static void noise1(noctt_turtle_t *turtle)
 {
     START
     TR(SAT, -1, LIGHT, 1, 0.5, FLAG, FLAG_EFFECT_LIGHT);
-    FOR(100) {
+    LOOP(100) {
         SQUARE(X, PM(0, 0.5), PM(0, 0.5),
                SN, S, 0.2, S, PM(1, 1),
                R, FRAND(0, 360),
@@ -448,7 +448,7 @@ static void block(noctt_turtle_t *turtle)
     RSQUARE(64);
     RSQUARE(64, G, -8, FLAG, FLAG_STENCIL_WRITE);
     TR(FLAG, FLAG_STENCIL_FILTER);
-    FOR(2, R, 90) {
+    LOOP(2, R, 90) {
         SQUARE(R, 45, S, 1.5, 0.2, LIGHT, 0.2);
     }
     CALL(noise1, VAR, 0, 0.05);
@@ -481,12 +481,12 @@ static void bomb(noctt_turtle_t *turtle)
     }
 
     TRANSFORM(LIGHT, 1) {
-        FOR(n, R, 360 / n) {
+        LOOP(n, R, 360 / n) {
             TR(X, 0.5, S, 0.2);
             TRIANGLE(LIGHT, -0.3);
             TRIANGLE(G, -1);
         }
-        FOR(6, R, 360 / 6) {
+        LOOP(6, R, 360 / 6) {
             TR(R, 180 / 6, X, 0.3, S, 0.2);
             TRIANGLE(LIGHT, -0.3);
             TRIANGLE(G, -1);

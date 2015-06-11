@@ -112,12 +112,12 @@
  * Looping
  * -------
  *
- * The FOR macro allow to run a loop, with an optional transformation applied
+ * The LOOP macro allow to run a loop, with an optional transformation applied
  * at every iteration:
  *
  *     // Render 10 circles each one scaled by 0.9 from the previous one,
  *     // and 10/100 darker.
- *     FOR(10, S, 0.9, LIGHT, -0.1) {
+ *     LOOP(10, S, 0.9, LIGHT, -0.1) {
  *         CIRCLE();
  *     }
  *
@@ -300,7 +300,7 @@
  *
  *     - Since the code make heavy use of the __LINE__ macro, it is not
  *       possible to put two of them on the same line!  So do not write
- *       something like: FOR(10) { SQUARE(); }.  This might or might not
+ *       something like: LOOP(10) { SQUARE(); }.  This might or might not
  *       work.  In the best case the compiler will refuse to compile.
  *
  *     - It is not possible to use local variables.  In fact it is possible,
@@ -374,7 +374,7 @@
 #undef POLY
 #undef TRANSFORM_SPAWN
 #undef TRANSFORM
-#undef FOR
+#undef LOOP
 
 #undef PM
 #undef BRAND
@@ -418,7 +418,7 @@
 #define POLY(...)              NOCTT_POLY(__VA_ARGS__)
 #define TRANSFORM_SPAWN(...)   NOCTT_TRANSFORM_SPAWN(__VA_ARGS__)
 #define TRANSFORM(...)         NOCTT_TRANSFORM(__VA_ARGS__)
-#define FOR(...)               NOCTT_FOR(__VA_ARGS__)
+#define LOOP(...)              NOCTT_LOOP(__VA_ARGS__)
 
 #define PM(x_, y_)    noctt_pm(turtle, x_, y_)
 #define BRAND(x_)     noctt_brand(turtle, x_)
@@ -630,7 +630,7 @@ enum {
         if ((turtle->iflags &= ~NOCTT_FLAG_JUST_CLONED), 1) \
             NOCTT_RUN_BLOCK_AND_KILL_
 
-#define NOCTT_FOR(n_, ...) \
+#define NOCTT_LOOP(n_, ...) \
     turtle->tmp = n_; \
     NOCTT_CLONE(1); \
     if (turtle->iflags & NOCTT_FLAG_JUST_CLONED) { \
