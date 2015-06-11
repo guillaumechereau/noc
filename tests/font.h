@@ -187,7 +187,7 @@ void font_draw_text(float x, float y, const char *str)
 void font_flush(void)
 {
     glDisable(GL_STENCIL_TEST);
-    glDisable(GL_DEPTH_BUFFER);
+    glDisable(GL_DEPTH_TEST);
     glUseProgram(font_prog.prog);
     glVertexAttribPointer(font_prog.a_pos_l, 2, GL_FLOAT, false,
                           sizeof(*triangle_buffer),
@@ -197,4 +197,5 @@ void font_flush(void)
                           (void*)(&triangle_buffer->tex_pos));
     glDrawArrays(GL_TRIANGLES, 0, triangle_count * 3);
     triangle_count = 0;
+    glEnable(GL_DEPTH_TEST);
 }
