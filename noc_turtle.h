@@ -514,7 +514,7 @@ enum {
 #define NOCTT_FLAG    NOCTT_OP_START, NOCTT_OP_FLAG
 
 // If __COUNTER__ is defined (gcc and clang), we use it, since it has the
-// advantage of staying the same when we modify the code.  It also allow
+// advantage of staying the same when we modify the code.  It also allows
 // to put several on the same line.
 // NOCTT_MARKER is used to generate a uniq int that can be used for labels
 // If we want to put several on the same line, we have to use a different
