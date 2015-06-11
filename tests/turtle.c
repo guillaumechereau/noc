@@ -57,13 +57,13 @@ enum {
 
 // Defines a custom directive to render text.
 #define TEXT(msg, ...) TRANSFORM(__VA_ARGS__) { \
-    noctt_vec3_t pos = noctt_get_pos(ctx); \
+    noctt_vec3_t pos = noctt_get_pos(turtle); \
     font_draw_text(pos.x, pos.y, msg); \
 }
 
 // ##### Some simple demos code #######
 
-static void spiral_node(noctt_turtle_t *ctx)
+static void spiral_node(noctt_turtle_t *turtle)
 {
     START               // All the rules should start with START
     SQUARE();           // Render a square at the current pos/size/rot/color.
@@ -80,7 +80,7 @@ static void spiral_node(noctt_turtle_t *ctx)
     END                 // All the rules should end with END
 }
 
-static void spiral(noctt_turtle_t *ctx)
+static void spiral(noctt_turtle_t *turtle)
 {
     START
     TR(HSL, 1, 0, 1, 0.5);
@@ -90,7 +90,7 @@ static void spiral(noctt_turtle_t *ctx)
     END
 }
 
-static void demo1(noctt_turtle_t *ctx)
+static void demo1(noctt_turtle_t *turtle)
 {
     START
     TEXT("Press any key to see the other demos", X, -0.47, Y, 0.47);
@@ -124,7 +124,7 @@ static void demo1(noctt_turtle_t *ctx)
     END
 }
 
-static void shapes_rule(noctt_turtle_t *ctx)
+static void shapes_rule(noctt_turtle_t *turtle)
 {
     // Example with all the basic primitives.
     const noctt_vec3_t poly[] = {
@@ -148,7 +148,7 @@ static void shapes_rule(noctt_turtle_t *ctx)
     END
 }
 
-static void stencil_rule(noctt_turtle_t *ctx)
+static void stencil_rule(noctt_turtle_t *turtle)
 {
     START
     TEXT("Show how to use FLAG to set the stencil operations",
@@ -164,13 +164,13 @@ static void stencil_rule(noctt_turtle_t *ctx)
     END
 }
 
-static void colors_rule(noctt_turtle_t *ctx)
+static void colors_rule(noctt_turtle_t *turtle)
 {
     START
     TR(SN, X, -0.5, -0.5, S, 1.0 / 64, SAT, 0.5);
     FOR(64, Y, 1, HUE, 360.0 / 64) {
         FOR(64, X, 1) {
-            SQUARE(LIGHT, 1, (float)ctx->i / (ctx->n - 1));
+            SQUARE(LIGHT, 1, (float)turtle->i / (turtle->n - 1));
         }
     }
     END
@@ -178,7 +178,7 @@ static void colors_rule(noctt_turtle_t *ctx)
 
 // ###### Rules to render the tree demo ######
 
-static void moon(noctt_turtle_t *ctx)
+static void moon(noctt_turtle_t *turtle)
 {
     START
     CIRCLE(LIGHT, -0.5, G, 2);
@@ -189,13 +189,13 @@ static void moon(noctt_turtle_t *ctx)
     END
 }
 
-static void part(noctt_turtle_t *ctx)
+static void part(noctt_turtle_t *turtle)
 {
     START
     RSQUARE(0, SX, 0.2, HUE, PM(0, 15));
     RSQUARE(0, SX, 0.2, LIGHT, -0.4, G, 2, Z, -0.5);
-    ctx->vars[0] += 1;
-    if (ctx->vars[0] == 15) {
+    turtle->vars[0] += 1;
+    if (turtle->vars[0] == 15) {
         TR(S, PM(1, 0.4));
         CIRCLE(HUE, PM(0, 45));
         CIRCLE(HUE, PM(0, 45), LIGHT, -0.4, G, 2, Z, -0.5);
@@ -209,7 +209,7 @@ static void part(noctt_turtle_t *ctx)
     END
 }
 
-void tree_rule(noctt_turtle_t *ctx)
+void tree_rule(noctt_turtle_t *turtle)
 {
     START
     TR(HSL, 180, 0.5, 0.5);
@@ -224,7 +224,7 @@ void tree_rule(noctt_turtle_t *ctx)
 
 // Rules for the 'modern' demo.
 
-static void modern_branch(noctt_turtle_t *ctx)
+static void modern_branch(noctt_turtle_t *turtle)
 {
     START
     SQUARE(SY, 0.2);
@@ -244,7 +244,7 @@ static void modern_branch(noctt_turtle_t *ctx)
     END
 }
 
-void modern_rule(noctt_turtle_t *ctx)
+void modern_rule(noctt_turtle_t *turtle)
 {
     START
     TR(SN, S, 0.2, LIGHT, 1);
@@ -260,14 +260,14 @@ void modern_rule(noctt_turtle_t *ctx)
 // ########### Rules for rendering the city ######################
 
 // Render a square from bottom up.
-static void square_up(noctt_turtle_t *ctx)
+static void square_up(noctt_turtle_t *turtle)
 {
     float k;
-    const float time = 0.1 * sqrtf(ctx->scale[1]);
+    const float time = 0.1 * sqrtf(turtle->scale[1]);
     const int nb = time * 50;
     START
     FOR(nb) {
-        k = ctx->i / (ctx->n - 1.0);
+        k = turtle->i / (turtle->n - 1.0);
         SQUARE(Y, -0.5, S, 1, k, Y, 0.5);
         YIELD(1);
     }
@@ -275,7 +275,7 @@ static void square_up(noctt_turtle_t *ctx)
     END
 }
 
-static void cloud(noctt_turtle_t *ctx)
+static void cloud(noctt_turtle_t *turtle)
 {
     START
     TR(A, -0.5, LIGHT, 1);
@@ -295,7 +295,7 @@ static void cloud(noctt_turtle_t *ctx)
     END
 }
 
-static void city_noise(noctt_turtle_t *ctx)
+static void city_noise(noctt_turtle_t *turtle)
 {
     START
     TR(FLAG, FLAG_EFFECT_LIGHT, SAT, -1, LIGHT, 1, 0.5);
@@ -307,7 +307,7 @@ static void city_noise(noctt_turtle_t *ctx)
     END
 }
 
-static void sky(noctt_turtle_t *ctx)
+static void sky(noctt_turtle_t *turtle)
 {
     const float sx = 0.02;
     const float dx = 0.9;
@@ -320,25 +320,25 @@ static void sky(noctt_turtle_t *ctx)
     // Render the sky lines.
     FOR(3, Y, 0.3) {
         TR(X, -0.5, S, sx, 0.2, LIGHT, 0.2);
-        for (i = 0; i < 3; i++) ctx->vars[i] = PM(0, 0.5);
+        for (i = 0; i < 3; i++) turtle->vars[i] = PM(0, 0.5);
         FOR(1.1 / sx / dx, X, dx, R, PM(0, 0.1), SY, PM(1, 0.01))
         {
             SQUARE();
             for (i = 0; i < 3; i++)
-                SQUARE(Y, ctx->vars[i], S, 1.2, 0.02, LIGHT, -0.05);
+                SQUARE(Y, turtle->vars[i], S, 1.2, 0.02, LIGHT, -0.05);
         }
     }
     END
 }
 
-static void antenna(noctt_turtle_t *ctx)
+static void antenna(noctt_turtle_t *turtle)
 {
     START
     CALL(square_up, S, 0.02, FRAND(1.5, 2) / 6, Y, 0.5);
     END
 }
 
-static void tower(noctt_turtle_t *ctx)
+static void tower(noctt_turtle_t *turtle)
 {
     const int n = 4;
     START
@@ -347,7 +347,7 @@ static void tower(noctt_turtle_t *ctx)
     // Sides
     if (BRAND(0.5)) {
         FOR(n) {
-            SPAWN(square_up, Y, (float)ctx->i / n - 0.4, S, 1.1, 0.1);
+            SPAWN(square_up, Y, (float)turtle->i / n - 0.4, S, 1.1, 0.1);
         }
     }
 
@@ -355,15 +355,15 @@ static void tower(noctt_turtle_t *ctx)
 
     // Top
     TRANSFORM(Y, 0.5, S, 0.9, 0.02, Y, 0.5) {
-        ctx->vars[0] = FRAND(0, 3);
-        FOR(ctx->vars[0], Y, 1, S, 0.9, 1)
+        turtle->vars[0] = FRAND(0, 3);
+        FOR(turtle->vars[0], Y, 1, S, 0.9, 1)
             CALL(square_up);
     }
 
     END
 }
 
-static void building(noctt_turtle_t *ctx)
+static void building(noctt_turtle_t *turtle)
 {
     START
     CALL(square_up);
@@ -389,7 +389,7 @@ static void building(noctt_turtle_t *ctx)
     END
 }
 
-static void structure(noctt_turtle_t *ctx)
+static void structure(noctt_turtle_t *turtle)
 {
     START
     if (BRAND(0.5))
@@ -399,7 +399,7 @@ static void structure(noctt_turtle_t *ctx)
     END
 }
 
-void blowfish_city_rule(noctt_turtle_t *ctx)
+void blowfish_city_rule(noctt_turtle_t *turtle)
 {
     START
     TR(HSL, 1, 0, 0.3, 0.5);
@@ -427,7 +427,7 @@ void blowfish_city_rule(noctt_turtle_t *ctx)
 
 // ############# Rules for rendering some blowfish objects ##############
 
-static void noise1(noctt_turtle_t *ctx)
+static void noise1(noctt_turtle_t *turtle)
 {
     START
     TR(SAT, -1, LIGHT, 1, 0.5, FLAG, FLAG_EFFECT_LIGHT);
@@ -435,12 +435,12 @@ static void noise1(noctt_turtle_t *ctx)
         SQUARE(X, PM(0, 0.5), PM(0, 0.5),
                SN, S, 0.2, S, PM(1, 1),
                R, FRAND(0, 360),
-               LIGHT, PM(0, ctx->vars[0]));
+               LIGHT, PM(0, turtle->vars[0]));
     }
     END
 }
 
-static void block(noctt_turtle_t *ctx)
+static void block(noctt_turtle_t *turtle)
 {
     START
     TR(HSL, 1, PM(200, 25), 0.5, 0.5);
@@ -455,7 +455,7 @@ static void block(noctt_turtle_t *ctx)
     END
 }
 
-static void saw(noctt_turtle_t *ctx)
+static void saw(noctt_turtle_t *turtle)
 {
     START
     TR(HSL, 1, 0, 0, 0.5);
@@ -467,7 +467,7 @@ static void saw(noctt_turtle_t *ctx)
     END
 }
 
-static void bomb(noctt_turtle_t *ctx)
+static void bomb(noctt_turtle_t *turtle)
 {
     const int n = 8;
     START
@@ -499,7 +499,7 @@ static void bomb(noctt_turtle_t *ctx)
     END
 }
 
-static void cannon(noctt_turtle_t *ctx)
+static void cannon(noctt_turtle_t *turtle)
 {
     START
     TR(HSL, 1, 90, 0, 0.5);
@@ -525,7 +525,7 @@ static void cannon(noctt_turtle_t *ctx)
     END
 }
 
-void blowfish_objs(noctt_turtle_t *ctx)
+void blowfish_objs(noctt_turtle_t *turtle)
 {
     START
     TEXT("Some objects from Blowish Rescue", X, -0.48, Y, 0.47);

@@ -114,19 +114,19 @@ static noctt_vec3_t mat_mul_vec(const float m[16], const noctt_vec3_t v)
     return (noctt_vec3_t){ret[0], ret[1], ret[2]};
 }
 
-static void noctt_dead(noctt_turtle_t *ctx) { }
+static void noctt_dead(noctt_turtle_t *turtle) { }
 
-noctt_vec3_t noctt_get_pos(const noctt_turtle_t *ctx)
+noctt_vec3_t noctt_get_pos(const noctt_turtle_t *turtle)
 {
     noctt_vec3_t p = {0, 0, 0};
-    return mat_mul_vec(ctx->mat, p);
+    return mat_mul_vec(turtle->mat, p);
 }
 
-void noctt_kill(noctt_turtle_t *ctx)
+void noctt_kill(noctt_turtle_t *turtle)
 {
-    ctx->func = noctt_dead;
-    ctx->iflags |= NOCTT_FLAG_DONE;
-    ctx->iflags &= ~NOCTT_FLAG_WAITING;
+    turtle->func = noctt_dead;
+    turtle->iflags |= NOCTT_FLAG_DONE;
+    turtle->iflags &= ~NOCTT_FLAG_WAITING;
 }
 
 static int noctt_tr_iter_op(int *n_tot, const float **codes, int *nb)
@@ -149,32 +149,32 @@ static int noctt_tr_iter_op(int *n_tot, const float **codes, int *nb)
     return op;
 }
 
-static void scale(noctt_turtle_t *ctx, float x, float y, float z)
+static void scale(noctt_turtle_t *turtle, float x, float y, float z)
 {
-    mat_scale(ctx->mat, x, y, z);
-    ctx->scale[0] *= x;
-    ctx->scale[1] *= y;
+    mat_scale(turtle->mat, x, y, z);
+    turtle->scale[0] *= x;
+    turtle->scale[1] *= y;
 }
 
-static void scale_normalize(noctt_turtle_t *ctx)
+static void scale_normalize(noctt_turtle_t *turtle)
 {
     float x, y;
-    x = ctx->scale[0];
-    y = ctx->scale[1];
+    x = turtle->scale[0];
+    y = turtle->scale[1];
     if (y > x)
-        scale(ctx, 1, x / y, 1);
+        scale(turtle, 1, x / y, 1);
     if (x > y)
-        scale(ctx, y / x, 1, 1);
+        scale(turtle, y / x, 1, 1);
 }
 
-static void grow(noctt_turtle_t *ctx, float x, float y)
+static void grow(noctt_turtle_t *turtle, float x, float y)
 {
     float sx, sy, kx, ky;
-    sx = ctx->scale[0] / ctx->prog->pixel_size;
-    sy = ctx->scale[1] / ctx->prog->pixel_size;
+    sx = turtle->scale[0] / turtle->prog->pixel_size;
+    sy = turtle->scale[1] / turtle->prog->pixel_size;
     kx = (2 * x + sx) / sx;
     ky = (2 * y + sy) / sy;
-    scale(ctx, kx, ky, 1);
+    scale(turtle, kx, ky, 1);
 }
 
 static float mix(float x, float y, float t)
@@ -211,7 +211,7 @@ static float mix_angle(float x, float y, float t)
     return ret;
 }
 
-static void flip(noctt_turtle_t *ctx, float a)
+static void flip(noctt_turtle_t *turtle, float a)
 {
     a = a / 180 * M_PI;
     float x = cos(a);
@@ -221,7 +221,7 @@ static void flip(noctt_turtle_t *ctx, float a)
         2 * x * y    , y * y - x * x, 0, 0,
         0            , 0            , 1, 0,
         0            , 0            , 0, 1};
-    mat_mult(ctx->mat, m);
+    mat_mult(turtle->mat, m);
 }
 
 static int set_flags(int x, int mask, bool value)
@@ -232,53 +232,53 @@ static int set_flags(int x, int mask, bool value)
         return x & ~mask;
 }
 
-void noctt_tr(noctt_turtle_t *ctx, int n_tot, const float *codes)
+void noctt_tr(noctt_turtle_t *tur, int n_tot, const float *codes)
 {
     int nb = 0, op, c, i;
     while ((op = noctt_tr_iter_op(&n_tot, &codes, &nb)) != NOCTT_OP_END) {
         switch (op) {
         case NOCTT_OP_S:
             assert(nb >= 1 && nb <= 3);
-            scale(ctx, codes[0],
+            scale(tur, codes[0],
                   nb > 1 ? codes[1] : codes[0],
                   nb > 2 ? codes[2] : 1);
             break;
         case NOCTT_OP_SAXIS:
             assert(nb == 2);
             assert(codes[0] >= 0 && codes[0] <= 2);
-            scale(ctx, codes[0] == 0 ? codes[1] : 1,
+            scale(tur, codes[0] == 0 ? codes[1] : 1,
                        codes[0] == 1 ? codes[1] : 1,
                        codes[0] == 2 ? codes[1] : 1);
             break;
         case NOCTT_OP_SN:
             assert(nb == 0);
-            scale_normalize(ctx);
+            scale_normalize(tur);
             break;
         case NOCTT_OP_G:
             assert(nb >= 1 && nb <= 2);
-            grow(ctx, codes[0], nb > 1 ? codes[1] : codes[0]);
+            grow(tur, codes[0], nb > 1 ? codes[1] : codes[0]);
             break;
         case NOCTT_OP_X:
             assert(nb > 0 && nb <= 3);
-            mat_translate(ctx->mat,
+            mat_translate(tur->mat,
                           codes[0],
                           nb > 1 ? codes[1] : 0,
                           nb > 2 ? codes[2] : 0);
             break;
         case NOCTT_OP_R:
             assert(nb == 1);
-            mat_rotate(ctx->mat, codes[0] / 180 * M_PI, 0, 0, 1);
+            mat_rotate(tur->mat, codes[0] / 180 * M_PI, 0, 0, 1);
             break;
         case NOCTT_OP_FLIP:
             assert(nb == 1);
-            flip(ctx, codes[0]);
+            flip(tur, codes[0]);
             break;
         case NOCTT_OP_HUE:
             assert(nb == 1 || nb == 2);
             if (nb == 1)
-                ctx->color[0] = mod(ctx->color[0] + codes[0], 360);
+                tur->color[0] = mod(tur->color[0] + codes[0], 360);
             else
-                ctx->color[0] = mix_angle(ctx->color[0], codes[1], codes[0]);
+                tur->color[0] = mix_angle(tur->color[0], codes[1], codes[0]);
             break;
         case NOCTT_OP_SAT:
         case NOCTT_OP_LIGHT:
@@ -286,26 +286,26 @@ void noctt_tr(noctt_turtle_t *ctx, int n_tot, const float *codes)
             assert(nb > 0 && nb <= 2);
             c = op - NOCTT_OP_HUE;
             if (nb == 1)
-                ctx->color[c] = move_value(ctx->color[c], codes[0], 1);
+                tur->color[c] = move_value(tur->color[c], codes[0], 1);
             else
-                ctx->color[c] = mix(ctx->color[c], codes[1], codes[0]);
+                tur->color[c] = mix(tur->color[c], codes[1], codes[0]);
             break;
         case NOCTT_OP_HSL:
             assert(nb == 3 || nb == 4);
             if (nb == 3) {
-                ctx->color[0] = mod(ctx->color[0] + codes[0], 360);
-                ctx->color[1] = move_value(ctx->color[1], codes[1], 1);
-                ctx->color[2] = move_value(ctx->color[2], codes[2], 1);
+                tur->color[0] = mod(tur->color[0] + codes[0], 360);
+                tur->color[1] = move_value(tur->color[1], codes[1], 1);
+                tur->color[2] = move_value(tur->color[2], codes[2], 1);
             } else {
-                ctx->color[0] = mix_angle(ctx->color[0], codes[1], codes[0]);
-                ctx->color[1] = mix(ctx->color[1], codes[2], codes[0]);
-                ctx->color[2] = mix(ctx->color[2], codes[3], codes[0]);
+                tur->color[0] = mix_angle(tur->color[0], codes[1], codes[0]);
+                tur->color[1] = mix(tur->color[1], codes[2], codes[0]);
+                tur->color[2] = mix(tur->color[2], codes[3], codes[0]);
             }
             break;
         case NOCTT_OP_FLAG:
             assert(nb == 1 || (nb % 2) == 0);
             for (i = 0; i < nb; i += 2) {
-                ctx->flags = set_flags(ctx->flags, codes[i],
+                tur->flags = set_flags(tur->flags, codes[i],
                                    nb > 1 ? codes[i + 1] : 1);
             }
             break;
@@ -313,8 +313,8 @@ void noctt_tr(noctt_turtle_t *ctx, int n_tot, const float *codes)
             assert(nb % 2 == 0);
             for (i = 0; i < nb; i += 2) {
                 assert(codes[i] >= 0 &&
-                       codes[i] < (sizeof(ctx->vars) / sizeof(ctx->vars[0])));
-                ctx->vars[(int)codes[i]] = codes[i + 1];
+                       codes[i] < (sizeof(tur->vars) / sizeof(tur->vars[0])));
+                tur->vars[(int)codes[i]] = codes[i + 1];
             }
             break;
         default:
@@ -323,23 +323,23 @@ void noctt_tr(noctt_turtle_t *ctx, int n_tot, const float *codes)
     }
 }
 
-void noctt_clone(noctt_turtle_t *ctx, int mode, int n, const float *ops)
+void noctt_clone(noctt_turtle_t *turtle, int mode, int n, const float *ops)
 {
     int i;
     noctt_turtle_t *new_turtle = NULL;
-    assert(!(ctx->iflags & NOCTT_FLAG_WAITING));
-    ctx->iflags &= ~NOCTT_FLAG_JUST_CLONED;
-    for (i = 0; i < ctx->prog->nb; i++) {
-        if (ctx->prog->turtles[i].func == NULL) {
-            new_turtle = &ctx->prog->turtles[i];
-            *new_turtle = *ctx;
+    assert(!(turtle->iflags & NOCTT_FLAG_WAITING));
+    turtle->iflags &= ~NOCTT_FLAG_JUST_CLONED;
+    for (i = 0; i < turtle->prog->nb; i++) {
+        if (turtle->prog->turtles[i].func == NULL) {
+            new_turtle = &turtle->prog->turtles[i];
+            *new_turtle = *turtle;
             new_turtle->iflags |= NOCTT_FLAG_JUST_CLONED;
             noctt_tr(new_turtle, n, ops);
             if (mode == 1) {
-                ctx->iflags |= NOCTT_FLAG_WAITING;
-                ctx->wait = i;
+                turtle->iflags |= NOCTT_FLAG_WAITING;
+                turtle->wait = i;
             }
-            ctx->prog->active++;
+            turtle->prog->active++;
             break;
         }
     }
@@ -349,24 +349,24 @@ noctt_prog_t *noctt_prog_create(noctt_rule_func_t rule, int nb, int seed,
                                 float *mat, float pixel_size)
 {
     noctt_prog_t *proc;
-    noctt_turtle_t *ctx;
+    noctt_turtle_t *tur;
     proc = (noctt_prog_t*)
                 calloc(1, sizeof(*proc) + nb * sizeof(*proc->turtles));
     proc->nb = nb;
     proc->rand_next = seed;
     assert(pixel_size);
     proc->pixel_size = pixel_size;
-    // Init first context.
+    // Init first turtle.
     proc->active = 1;
-    ctx = &proc->turtles[0];
-    ctx->color[3] = 1;
-    ctx->func = rule;
-    ctx->prog = proc;
-    mat_set_identity(ctx->mat);
+    tur = &proc->turtles[0];
+    tur->color[3] = 1;
+    tur->func = rule;
+    tur->prog = proc;
+    mat_set_identity(tur->mat);
     if (mat)
-        mat_mult(ctx->mat, mat);
-    ctx->scale[0] = sqrt(mat[0] * mat[0] + mat[1] * mat[1] + mat[2] * mat[2]);
-    ctx->scale[1] = sqrt(mat[4] * mat[4] + mat[5] * mat[5] + mat[6] * mat[6]);
+        mat_mult(tur->mat, mat);
+    tur->scale[0] = sqrt(mat[0] * mat[0] + mat[1] * mat[1] + mat[2] * mat[2]);
+    tur->scale[1] = sqrt(mat[4] * mat[4] + mat[5] * mat[5] + mat[6] * mat[6]);
     proc->min_scale = 0.25;
 
     return proc;
@@ -377,55 +377,55 @@ void noctt_prog_delete(noctt_prog_t *proc)
     free(proc);
 }
 
-static noctt_turtle_t *get_wait(const noctt_turtle_t *ctx)
+static noctt_turtle_t *get_wait(const noctt_turtle_t *tur)
 {
-    return (ctx->iflags & NOCTT_FLAG_WAITING) ? &ctx->prog->turtles[ctx->wait]
+    return (tur->iflags & NOCTT_FLAG_WAITING) ? &tur->prog->turtles[tur->wait]
                                               : NULL;
 }
 
-static void assert_can_remove(const noctt_turtle_t *ctx)
+static void assert_can_remove(const noctt_turtle_t *turtle)
 {
 #ifdef NDEBUG
     return;
 #endif
     int i;
-    for (i = 0; i < ctx->prog->nb; i++) {
-        assert(!ctx->prog->turtles[i].func ||
-                get_wait(&ctx->prog->turtles[i]) != ctx);
+    for (i = 0; i < turtle->prog->nb; i++) {
+        assert(!turtle->prog->turtles[i].func ||
+                get_wait(&turtle->prog->turtles[i]) != turtle);
     }
 }
 
-static bool iter_context(noctt_turtle_t *ctx)
+static bool iter_context(noctt_turtle_t *turtle)
 {
-    if (ctx->func == noctt_dead) {
-        assert_can_remove(ctx);
-        ctx->func = NULL;
-        ctx->prog->active--;
+    if (turtle->func == noctt_dead) {
+        assert_can_remove(turtle);
+        turtle->func = NULL;
+        turtle->prog->active--;
     }
 
-    if (!ctx->func)
-        ctx->iflags |= NOCTT_FLAG_DONE;
+    if (!turtle->func)
+        turtle->iflags |= NOCTT_FLAG_DONE;
 
-    if (ctx->iflags & NOCTT_FLAG_DONE)
+    if (turtle->iflags & NOCTT_FLAG_DONE)
         return true;
 
-    if (get_wait(ctx) && (get_wait(ctx)->func == noctt_dead))
-        ctx->iflags &= ~NOCTT_FLAG_WAITING;
-    if (get_wait(ctx)) {
-        if (get_wait(ctx)->iflags & NOCTT_FLAG_DONE)
-            ctx->iflags |= NOCTT_FLAG_DONE;
+    if (get_wait(turtle) && (get_wait(turtle)->func == noctt_dead))
+        turtle->iflags &= ~NOCTT_FLAG_WAITING;
+    if (get_wait(turtle)) {
+        if (get_wait(turtle)->iflags & NOCTT_FLAG_DONE)
+            turtle->iflags |= NOCTT_FLAG_DONE;
         return false;
     }
 
-    if (    fabs(ctx->scale[0]) <= ctx->prog->min_scale ||
-            fabs(ctx->scale[0]) <= ctx->prog->min_scale) {
-        noctt_kill(ctx);
+    if (    fabs(turtle->scale[0]) <= turtle->prog->min_scale ||
+            fabs(turtle->scale[0]) <= turtle->prog->min_scale) {
+        noctt_kill(turtle);
         return true;
     }
 
-    ctx->func(ctx);
-    assert(ctx->func);
-    ctx->time += 1;
+    turtle->func(turtle);
+    assert(turtle->func);
+    turtle->time += 1;
     return true;
 }
 
@@ -447,65 +447,65 @@ void noctt_prog_iter(noctt_prog_t *proc)
     }
 }
 
-int noctt_rand(noctt_turtle_t *ctx)
+int noctt_rand(noctt_turtle_t *turtle)
 {
-    ctx->prog->rand_next = ctx->prog->rand_next * 1103515245 + 12345;
-    return((unsigned)(ctx->prog->rand_next/65536) % 32768);
+    turtle->prog->rand_next = turtle->prog->rand_next * 1103515245 + 12345;
+    return((unsigned)(turtle->prog->rand_next/65536) % 32768);
 }
 
-float noctt_frand(noctt_turtle_t *ctx, float min, float max)
+float noctt_frand(noctt_turtle_t *turtle, float min, float max)
 {
-    return min + (noctt_rand(ctx) % 4096) / 4096. * (max - min);
+    return min + (noctt_rand(turtle) % 4096) / 4096. * (max - min);
 }
 
-bool noctt_brand(noctt_turtle_t *ctx, float x)
+bool noctt_brand(noctt_turtle_t *turtle, float x)
 {
-    return noctt_frand(ctx, 0, 1) <= x;
+    return noctt_frand(turtle, 0, 1) <= x;
 }
 
-float noctt_pm(noctt_turtle_t *ctx, float x, float a)
+float noctt_pm(noctt_turtle_t *turtle, float x, float a)
 {
-    return noctt_frand(ctx, x - a, x + a);
+    return noctt_frand(turtle, x - a, x + a);
 }
 
-static void render(const noctt_turtle_t *ctx, int n, const noctt_vec3_t *poly,
+static void render(const noctt_turtle_t *turtle, int n, const noctt_vec3_t *poly,
                    const float color[4], unsigned int flags)
 {
-    if (!ctx->prog->render_callback) {
+    if (!turtle->prog->render_callback) {
         printf("ERROR: need to set a render callback\n");
         assert(0);
     }
-    ctx->prog->render_callback(n, poly, color, flags,
-                               ctx->prog->render_callback_data);
+    turtle->prog->render_callback(n, poly, color, flags,
+                               turtle->prog->render_callback_data);
 }
 
-void noctt_poly(const noctt_turtle_t *ctx, int n, const noctt_vec3_t *poly)
+void noctt_poly(const noctt_turtle_t *turtle, int n, const noctt_vec3_t *poly)
 {
     noctt_vec3_t *points = (noctt_vec3_t*)malloc(n * sizeof(*points));
     int i;
     for (i = 0; i < n; i++)
-        points[i] = mat_mul_vec(ctx->mat, poly[i]);
-    render(ctx, n, points, ctx->color, ctx->flags);
+        points[i] = mat_mul_vec(turtle->mat, poly[i]);
+    render(turtle, n, points, turtle->color, turtle->flags);
     free(points);
 }
 
-void noctt_square(const noctt_turtle_t *ctx)
+void noctt_square(const noctt_turtle_t *turtle)
 {
     noctt_vec3_t poly[4] = {
         {-0.5, -0.5}, {+0.5, -0.5}, {+0.5, +0.5}, {-0.5, +0.5}
     };
-    noctt_poly(ctx, 4, poly);
+    noctt_poly(turtle, 4, poly);
 }
 
-void noctt_rsquare(const noctt_turtle_t *ctx, float c)
+void noctt_rsquare(const noctt_turtle_t *turtle, float c)
 {
     const int n = 8;
     float sx, sy, sm, rx, ry, r, aa;
     int a, i;
     noctt_vec3_t *poly;
 
-    sx = ctx->scale[0];
-    sy = ctx->scale[1];
+    sx = turtle->scale[0];
+    sy = turtle->scale[1];
     sm = min(sx, sy);
     r = max((sm - c) / 2, 0);
     rx = r / sx;
@@ -521,11 +521,11 @@ void noctt_rsquare(const noctt_turtle_t *ctx, float c)
         poly[i].y = ry * sin(aa) + d[i / n][1];
         if ((i % n) != (n - 1)) a++;
     }
-    noctt_poly(ctx, 4 * n, poly);
+    noctt_poly(turtle, 4 * n, poly);
     free(poly);
 }
 
-void noctt_circle(const noctt_turtle_t *ctx)
+void noctt_circle(const noctt_turtle_t *turtle)
 {
     static const int CIRCLE_NB = 32;
     static noctt_vec3_t *poly = NULL;
@@ -537,10 +537,10 @@ void noctt_circle(const noctt_turtle_t *ctx)
             poly[i].y = 0.5f * sin(2 * M_PI * i / CIRCLE_NB);
         }
     }
-    noctt_poly(ctx, CIRCLE_NB, poly);
+    noctt_poly(turtle, CIRCLE_NB, poly);
 }
 
-void noctt_star(const noctt_turtle_t *ctx, int n, float t, float c)
+void noctt_star(const noctt_turtle_t *turtle, int n, float t, float c)
 {
     float a;
     int i;
@@ -565,6 +565,6 @@ void noctt_star(const noctt_turtle_t *ctx, int n, float t, float c)
                 mix(p[1 + 2 * i].y, p[1 + 2 * (i + 1)].y, c),
                 0, t);
     }
-    noctt_poly(ctx, 2 + n * 2, p);
+    noctt_poly(turtle, 2 + n * 2, p);
     free(p);
 }

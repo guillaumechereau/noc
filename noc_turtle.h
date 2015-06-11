@@ -35,7 +35,7 @@
  * to hide the dirty details, you have to enclose the code with a START and
  * END.  Here is a basic rule that just renders a square:
  *
- *     void my_rule(noctt_turtle_t *ctx)
+ *     void my_rule(noctt_turtle_t *turtle)
  *     {
  *         START
  *         SQUARE();
@@ -86,7 +86,7 @@
  * timing, we need to use the YIELD macro, that tell the turtle to wait one
  * iteration before proceeding with the rest of the rule.
  *
- *     void a_rule(noctt_turtle_t *ctx)
+ *     void a_rule(noctt_turtle_t *turtle)
  *     {
  *         START
  *         SQUARE();
@@ -95,7 +95,7 @@
  *         END
  *     }
  *
- *     void main_rule(noctt_turtle_t *ctx)
+ *     void main_rule(noctt_turtle_t *turtle)
  *     {
   *        START
  *         // Create a new turtle from the current one, scale it, and make it
@@ -420,9 +420,9 @@
 #define TRANSFORM(...)         NOCTT_TRANSFORM(__VA_ARGS__)
 #define FOR(...)               NOCTT_FOR(__VA_ARGS__)
 
-#define PM(x_, y_)    noctt_pm(ctx, x_, y_)
-#define BRAND(x_)     noctt_brand(ctx, x_)
-#define FRAND(a_, b_) noctt_frand(ctx, a_, b_)
+#define PM(x_, y_)    noctt_pm(turtle, x_, y_)
+#define BRAND(x_)     noctt_brand(turtle, x_)
+#define FRAND(a_, b_) noctt_frand(turtle, a_, b_)
 
 #endif
 
@@ -529,11 +529,11 @@ enum {
 
 #define NOCTT_TR(...) do { \
         const float ops_[] = {__VA_ARGS__}; \
-        noctt_tr(ctx, sizeof(ops_) / sizeof(float), ops_); \
+        noctt_tr(turtle, sizeof(ops_) / sizeof(float), ops_); \
     } while (0)
 
 #define NOCTT_START \
-    switch (ctx->step) {          \
+    switch (turtle->step) {          \
         case 0:;
 
 #define NOCTT_END   \
@@ -542,64 +542,64 @@ enum {
 
 #define NOCTT_PRIMITIVE_(func, ...) do { \
     const float ops_[] = {__VA_ARGS__}; \
-    noctt_turtle_t ctx_ = *ctx; \
-    noctt_tr(&ctx_, sizeof(ops_) / sizeof(float), ops_); \
+    noctt_turtle_t turtle_ = *turtle; \
+    noctt_tr(&turtle_, sizeof(ops_) / sizeof(float), ops_); \
     func; \
 } while (0)
 
 #define NOCTT_SQUARE(...)      \
-    NOCTT_PRIMITIVE_(noctt_square(&ctx_), __VA_ARGS__)
+    NOCTT_PRIMITIVE_(noctt_square(&turtle_), __VA_ARGS__)
 #define NOCTT_RSQUARE(r, ...)  \
-    NOCTT_PRIMITIVE_(noctt_rsquare(&ctx_, r), __VA_ARGS__)
+    NOCTT_PRIMITIVE_(noctt_rsquare(&turtle_, r), __VA_ARGS__)
 #define NOCTT_CIRCLE(...)      \
-    NOCTT_PRIMITIVE_(noctt_circle(&ctx_), __VA_ARGS__)
+    NOCTT_PRIMITIVE_(noctt_circle(&turtle_), __VA_ARGS__)
 #define NOCTT_STAR(n, t, c, ...) \
-    NOCTT_PRIMITIVE_(noctt_star(&ctx_, n, t, c), __VA_ARGS__)
+    NOCTT_PRIMITIVE_(noctt_star(&turtle_, n, t, c), __VA_ARGS__)
 #define NOCTT_POLY(n, p, ...) \
-    NOCTT_PRIMITIVE_(noctt_poly(&ctx_, n, p), __VA_ARGS__)
+    NOCTT_PRIMITIVE_(noctt_poly(&turtle_, n, p), __VA_ARGS__)
 #define NOCTT_TRIANGLE(...)    NOCTT_STAR(3, 0, 0, ##__VA_ARGS__)
 
 #define NOCTT_YIELD(...) do { \
-    ctx->tmp = (1, ##__VA_ARGS__); \
-    ctx->step = NOCTT_MARKER(0, 1); \
+    turtle->tmp = (1, ##__VA_ARGS__); \
+    turtle->step = NOCTT_MARKER(0, 1); \
     case NOCTT_MARKER(0, 0):; \
-    if (ctx->tmp--) { \
-        ctx->iflags |= NOCTT_FLAG_DONE; \
+    if (turtle->tmp--) { \
+        turtle->iflags |= NOCTT_FLAG_DONE; \
         return; \
     } \
 } while (0)
 
 #define NOCTT_CLONE(mode, ...) do { \
-    ctx->step = NOCTT_MARKER(0, 1); \
+    turtle->step = NOCTT_MARKER(0, 1); \
     const float ops_[] = {__VA_ARGS__}; \
-    noctt_clone(ctx, mode, sizeof(ops_) / sizeof(float), ops_); \
+    noctt_clone(turtle, mode, sizeof(ops_) / sizeof(float), ops_); \
     if (mode == 1) return; \
     } while (0); \
     case NOCTT_MARKER(0, 0):; \
 
 #define NOCTT_CALL(rule, ...) do { \
     NOCTT_CLONE(1, ##__VA_ARGS__); \
-    if (ctx->iflags & NOCTT_FLAG_JUST_CLONED) { \
-        ctx->iflags &= ~NOCTT_FLAG_JUST_CLONED; \
-        ctx->func = rule; \
-        ctx->step = 0; \
+    if (turtle->iflags & NOCTT_FLAG_JUST_CLONED) { \
+        turtle->iflags &= ~NOCTT_FLAG_JUST_CLONED; \
+        turtle->func = rule; \
+        turtle->step = 0; \
         return; \
     } \
 } while (0)
 
 #define NOCTT_JUMP(rule, ...) do { \
     TR(__VA_ARGS__); \
-    ctx->func = rule; \
-    ctx->step = 0; \
+    turtle->func = rule; \
+    turtle->step = 0; \
     return; \
 } while (0)
 
 #define NOCTT_SPAWN(rule, ...) do { \
     NOCTT_CLONE(0, ##__VA_ARGS__); \
-    if (ctx->iflags & NOCTT_FLAG_JUST_CLONED) { \
-        ctx->iflags &= ~NOCTT_FLAG_JUST_CLONED; \
-        ctx->func = rule; \
-        ctx->step = 0; \
+    if (turtle->iflags & NOCTT_FLAG_JUST_CLONED) { \
+        turtle->iflags &= ~NOCTT_FLAG_JUST_CLONED; \
+        turtle->func = rule; \
+        turtle->step = 0; \
         return; \
     } \
 } while (0)
@@ -612,7 +612,7 @@ enum {
     else \
         while (1) \
             if (1) { \
-                noctt_kill(ctx); \
+                noctt_kill(turtle); \
                 return; \
             } \
             else \
@@ -620,53 +620,53 @@ enum {
 
 #define NOCTT_TRANSFORM_SPAWN(...) \
     NOCTT_CLONE(0, ##__VA_ARGS__); \
-    if (ctx->iflags & NOCTT_FLAG_JUST_CLONED) \
-        if ((ctx->iflags &= ~NOCTT_FLAG_JUST_CLONED), 1) \
+    if (turtle->iflags & NOCTT_FLAG_JUST_CLONED) \
+        if ((turtle->iflags &= ~NOCTT_FLAG_JUST_CLONED), 1) \
             NOCTT_RUN_BLOCK_AND_KILL_
 
 #define NOCTT_TRANSFORM(...) \
     NOCTT_CLONE(1, ##__VA_ARGS__); \
-    if (ctx->iflags & NOCTT_FLAG_JUST_CLONED) \
-        if ((ctx->iflags &= ~NOCTT_FLAG_JUST_CLONED), 1) \
+    if (turtle->iflags & NOCTT_FLAG_JUST_CLONED) \
+        if ((turtle->iflags &= ~NOCTT_FLAG_JUST_CLONED), 1) \
             NOCTT_RUN_BLOCK_AND_KILL_
 
 #define NOCTT_FOR(n_, ...) \
-    ctx->tmp = n_; \
+    turtle->tmp = n_; \
     NOCTT_CLONE(1); \
-    if (ctx->iflags & NOCTT_FLAG_JUST_CLONED) { \
-        ctx->step = NOCTT_MARKER(1, 1); case NOCTT_MARKER(1, 0):; \
-        ctx->n = ctx->tmp; \
-        for (ctx->i = 0; ctx->i < ctx->n; ctx->i++) { \
-            ctx->step = NOCTT_MARKER(2, 1); \
-            noctt_clone(ctx, 1, 0, 0); \
+    if (turtle->iflags & NOCTT_FLAG_JUST_CLONED) { \
+        turtle->step = NOCTT_MARKER(1, 1); case NOCTT_MARKER(1, 0):; \
+        turtle->n = turtle->tmp; \
+        for (turtle->i = 0; turtle->i < turtle->n; turtle->i++) { \
+            turtle->step = NOCTT_MARKER(2, 1); \
+            noctt_clone(turtle, 1, 0, 0); \
             NOCTT_TR(__VA_ARGS__); \
             return; \
             case NOCTT_MARKER(2, 0):; \
-            if (ctx->iflags & NOCTT_FLAG_JUST_CLONED) { \
-                ctx->step = NOCTT_MARKER(3, 1); \
+            if (turtle->iflags & NOCTT_FLAG_JUST_CLONED) { \
+                turtle->step = NOCTT_MARKER(3, 1); \
                 return; \
             } \
         } \
-        noctt_kill(ctx); \
+        noctt_kill(turtle); \
         return; \
     } \
     case NOCTT_MARKER(3, 0):; \
-    if (ctx->iflags & NOCTT_FLAG_JUST_CLONED) \
+    if (turtle->iflags & NOCTT_FLAG_JUST_CLONED) \
         NOCTT_RUN_BLOCK_AND_KILL_
 
 
-#define NOCTT_KILL() do { noctt_kill(ctx); return; } while(0)
+#define NOCTT_KILL() do { noctt_kill(turtle); return; } while(0)
 
-noctt_vec3_t noctt_get_pos(const noctt_turtle_t *ctx);
-void noctt_square(const noctt_turtle_t *ctx);
-void noctt_rsquare(const noctt_turtle_t *ctx, float r);
-void noctt_circle(const noctt_turtle_t *ctx);
-void noctt_star(const noctt_turtle_t *ctx, int n, float t, float c);
-void noctt_poly(const noctt_turtle_t *ctx, int n, const noctt_vec3_t *poly);
+noctt_vec3_t noctt_get_pos(const noctt_turtle_t *turtle);
+void noctt_square(const noctt_turtle_t *turtle);
+void noctt_rsquare(const noctt_turtle_t *turtle, float r);
+void noctt_circle(const noctt_turtle_t *turtle);
+void noctt_star(const noctt_turtle_t *turtle, int n, float t, float c);
+void noctt_poly(const noctt_turtle_t *turtle, int n, const noctt_vec3_t *poly);
 
-void noctt_kill(noctt_turtle_t *ctx);
-void noctt_tr(noctt_turtle_t *ctx, int n, const float *ops);
-void noctt_clone(noctt_turtle_t *ctx, int mode, int n, const float *ops);
+void noctt_kill(noctt_turtle_t *turtle);
+void noctt_tr(noctt_turtle_t *turtle, int n, const float *ops);
+void noctt_clone(noctt_turtle_t *turtle, int mode, int n, const float *ops);
 
 typedef void (*noctt_render_func_t)(int n, const noctt_vec3_t *poly,
                                     const float color[4],
@@ -684,9 +684,9 @@ struct noctt_prog {
     noctt_turtle_t      turtles[];
 };
 
-float noctt_frand(noctt_turtle_t *ctx, float a, float b);
-bool noctt_brand(noctt_turtle_t *ctx, float x);
-float noctt_pm(noctt_turtle_t *ctx, float x, float a);
+float noctt_frand(noctt_turtle_t *turtle, float a, float b);
+bool noctt_brand(noctt_turtle_t *turtle, float x);
+float noctt_pm(noctt_turtle_t *turtle, float x, float a);
 
 noctt_prog_t *noctt_prog_create(noctt_rule_func_t rule, int nb,
                                 int seed, float rect[16], float pixel_size);
