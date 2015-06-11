@@ -687,7 +687,7 @@ static struct {
     {"blowfish", blowfish_city_rule},
 };
 
-static const nb_rules = sizeof(RULES) / sizeof(RULES[0]);
+static const int nb_rules = sizeof(RULES) / sizeof(RULES[0]);
 static int rule_index = 0;
 static noctt_prog_t *prog = NULL;
 static GLFWwindow *window;
