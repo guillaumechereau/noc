@@ -288,6 +288,14 @@ void noctt_tr(noctt_turtle_t *ctx, int n_tot, const float *codes)
                                    nb > 1 ? codes[i + 1] : 1);
             }
             break;
+        case NOCTT_OP_VAR:
+            assert(nb % 2 == 0);
+            for (i = 0; i < nb; i += 2) {
+                assert(codes[i] >= 0 &&
+                       codes[i] < (sizeof(ctx->vars) / sizeof(ctx->vars[0])));
+                ctx->vars[(int)codes[i]] = codes[i + 1];
+            }
+            break;
         default:
             assert(0);
         }
