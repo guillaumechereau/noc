@@ -20,7 +20,7 @@ To compile the demo, type 'make'.  You need to have OpenGL, GLFW, and GLEW.
 FAQ
 ---
 
-# Does noc_turtle supports all the features of Context Free?
+#### Does noc_turtle support all the features of Context Free?
 
 Probably not.  I am not familiar enough with Context Free to tell.  I tried
 my best to keep the syntax as close as possible. Since noc_turtle is not
@@ -46,26 +46,26 @@ Also some of the adjustment functions have different names (for example A
 instead of alpha).
 
 
-# What is the licence?
+#### What is the licence?
 
 All the code is released under permissive free MIT licence.  This means it's
 OK to use the code in your commercial project.
 
 
-# Why not making a single file library like stb?
+#### Why not making a single file library like stb?
 
 I might do that at some point.  For the moment I keep the header and code
 separated into two files.
 
 
-# Why is the code of noc_turtle full of macros?
+#### Why is the code of noc_turtle full of macros?
 
 This is because the code is using a C trick to make state machine look like
 linear code.  For a good introduction to this, you can check this article from
 Simon Tatham: http://www.chiark.greenend.org.uk/~sgtatham/coroutines.html
 
 
-# Does it work under Windows?
+#### Does it work under Windows?
 
 I cannot guaranty that.  I usually work on a unix environment.  The library
 was originally created for a video game targeting only Android and iOS.
