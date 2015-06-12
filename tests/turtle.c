@@ -67,7 +67,6 @@ static void spiral_node(noctt_turtle_t *turtle)
 {
     START               // All the rules should start with START
     SQUARE();           // Render a square at the current pos/size/rot/color.
-    TR(HUE, PM(0, 5));  // Change the color randomly (plus or minus 5).
     YIELD();            // Wait one iteration.
     if (BRAND(0.01)) {  // Randomly create a new branch at 90 deg.
         TR(FLIP, 0);
@@ -76,7 +75,7 @@ static void spiral_node(noctt_turtle_t *turtle)
     // Continue the branch a bit further.
     // Note that we do the rotation in between to translations, so that in
     // effect the center of rotation is at the extremity of the branch.
-    SPAWN(spiral_node, X, 0.4, R, 3, X, 0.4, S, 0.99);
+    SPAWN(spiral_node, X, 0.4, R, 3, X, 0.4, S, 0.99, LIGHT, -0.002);
     END                 // All the rules should end with END
 }
 
@@ -121,6 +120,29 @@ static void demo1(noctt_turtle_t *turtle)
     TRIANGLE(S, 0.1, Y, 4);
 
     CALL(spiral, Y, -0.5, S, 0.02, Z, -0.5);
+    END
+}
+
+static void demo_sun(noctt_turtle_t *turtle)
+{
+    START
+    TR(S, 0.2, SN);                                 // Set the scale.
+    TR(HUE, 40, SAT, 1, LIGHT, 0.7);                // Set the color.
+    CIRCLE();                                       // Render sun.
+    LOOP(16, R, 360 / 16.) {                        // Rotate around.
+        YIELD();
+        RSQUARE(0, X, 1, S, 0.8, 0.1, LIGHT, 0.2);  // Render ray.
+        CIRCLE(X, 1.7, S, 0.4);                     // Render ray circle.
+    }
+    END
+}
+
+static void demo_spiral(noctt_turtle_t *turtle)
+{
+    START
+    TR(HSL, 1, 100, 0.5, 0.5, S, 0.02, SN);
+    SPAWN(spiral_node);
+    SPAWN(spiral_node, FLIP, 90);
     END
 }
 
@@ -678,6 +700,8 @@ static struct {
     noctt_rule_func_t   rule;
 } RULES[] = {
     {"press key to see more",    demo1},
+    {"sun", demo_sun},
+    {"spiral", demo_spiral},
     {"blowfish objs", blowfish_objs},
     {"tree" , tree_rule},
     {"modern", modern_rule},
