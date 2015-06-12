@@ -504,6 +504,7 @@ void noctt_rsquare(const noctt_turtle_t *turtle, float c)
     int a, i;
     noctt_vec3_t *poly;
 
+    c *= turtle->prog->pixel_size;
     sx = turtle->scale[0];
     sy = turtle->scale[1];
     sm = min(sx, sy);
