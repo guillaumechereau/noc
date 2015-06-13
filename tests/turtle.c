@@ -771,4 +771,5 @@ int main()
     }
     noctt_prog_delete(prog);
     glfwTerminate();
+    return 0;
 }
