@@ -89,9 +89,6 @@ void font_init(const float proj_mat[16])
     glUniform4f(font_prog.u_color_l, 1, 1, 1, 1);
     glUniformMatrix4fv(font_prog.u_proj_l, 1, 0, proj_mat);
 
-    glEnableVertexAttribArray(font_prog.a_pos_l);
-    glEnableVertexAttribArray(font_prog.a_tex_pos_l);
-
     // Load the SDF font texture.
     glGenTextures(1, &font_prog.texture);
     glBindTexture(GL_TEXTURE_2D, font_prog.texture);
@@ -189,6 +186,8 @@ void font_flush(void)
     glDisable(GL_STENCIL_TEST);
     glDisable(GL_DEPTH_TEST);
     glUseProgram(font_prog.prog);
+    glEnableVertexAttribArray(font_prog.a_pos_l);
+    glEnableVertexAttribArray(font_prog.a_tex_pos_l);
     glVertexAttribPointer(font_prog.a_pos_l, 2, GL_FLOAT, false,
                           sizeof(*triangle_buffer),
                           (void*)(&triangle_buffer->pos));
@@ -196,6 +195,8 @@ void font_flush(void)
                           sizeof(*triangle_buffer),
                           (void*)(&triangle_buffer->tex_pos));
     glDrawArrays(GL_TRIANGLES, 0, triangle_count * 3);
-    triangle_count = 0;
+    glDisableVertexAttribArray(font_prog.a_pos_l);
+    glDisableVertexAttribArray(font_prog.a_tex_pos_l);
     glEnable(GL_DEPTH_TEST);
+    triangle_count = 0;
 }

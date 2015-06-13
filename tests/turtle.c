@@ -635,7 +635,6 @@ static void init_opengl(int w, int h)
     gl_prog.u_proj_l = glGetUniformLocation(gl_prog.prog, "u_proj");
     gl_prog.u_color_l = glGetUniformLocation(gl_prog.prog, "u_color");
     gl_prog.a_pos_l = glGetAttribLocation(gl_prog.prog, "a_pos");
-    glEnableVertexAttribArray(gl_prog.a_pos_l);
 
     glViewport(0, 0, w, h);
     glUseProgram(gl_prog.prog);
@@ -761,9 +760,11 @@ int main()
 
     while (!glfwWindowShouldClose(window)) {
         glUseProgram(gl_prog.prog);
-
+        glEnableVertexAttribArray(gl_prog.a_pos_l);
         noctt_prog_iter(prog);
         assert(glGetError() == GL_NO_ERROR);
+        glDisableVertexAttribArray(gl_prog.a_pos_l);
+
         font_flush();
         glfwSwapBuffers(window);
         glfwPollEvents();
