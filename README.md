@@ -3,15 +3,25 @@ noc
 
 A list of public domain libraries for C/C++, inspired by the stb libraries.
 
-For the moment I just put one library: noc_turtle, that allows to create
-procedural graphics using a syntax close to the one of [Context Free], but
-directly in C code.  This is the code I used in my video game [Blowfish
-Rescue].
+* **noc_turtle**: procedural graphics generation in plain C.
+* **noc_vec**: 2d, 3d and 4d vectors, 2x2, 3x3, and 4x4 matrices, quaternions.
+
+To compile the demo, type 'make'.  You need to have OpenGL, GLFW, and GLEW.
+
+## noc_turtle
+
+Allows to create procedural graphics using a syntax close to the one of
+[Context Free], but directly in C code.  This is the code I used in my video
+game [Blowfish Rescue].
 
 To use the code, put noc_turtle.h and noc_turtle.c in your project file.  See
 noc_turtle.h for some documentation about the usage.
 
-To compile the demo, type 'make'.  You need to have OpenGL, GLFW, and GLEW.
+## noc_vec
+
+Simple single file linear alebra library that includes vector, matrix and
+quaternion.  See tests/vec.cpp and noc_vec.h for usage.
+
 
 [Context Free]: http://www.contextfreeart.org/
 [Blowfish Rescue]: http://noctua-software.com/blowfish-rescue
