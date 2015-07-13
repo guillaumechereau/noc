@@ -193,6 +193,7 @@
  */
 
 #include <math.h>
+#include <stdbool.h>
 
 #ifndef N
     #define N 2
@@ -472,15 +473,23 @@ typedef union {
     real_t v[N * N];
 } MT;
 
-static const MT MNAME(_zero) = {0};
-static const MT MNAME(_identity) = {
+static const MT MNAME(_zero) = {{
     TAKEC(
-        (VT){{TAKEC(1, 0, 0, 0)}},
-        (VT){{TAKEC(0, 1, 0, 0)}},
-        (VT){{TAKEC(0, 0, 1, 0)}},
-        (VT){{TAKEC(0, 0, 0, 1)}}
+        {{TAKEC(0, 0, 0, 0)}},
+        {{TAKEC(0, 0, 0, 0)}},
+        {{TAKEC(0, 0, 0, 0)}},
+        {{TAKEC(0, 0, 0, 0)}}
     )
-};
+}};
+
+static const MT MNAME(_identity) = {{
+    TAKEC(
+        {{TAKEC(1, 0, 0, 0)}},
+        {{TAKEC(0, 1, 0, 0)}},
+        {{TAKEC(0, 0, 1, 0)}},
+        {{TAKEC(0, 0, 0, 1)}}
+    )
+}};
 
 NOC_DEF MT MNAME()(TAKEC(
             TAKEC(real_t x0, real_t y0, real_t z0, real_t w0),
@@ -488,14 +497,14 @@ NOC_DEF MT MNAME()(TAKEC(
             TAKEC(real_t x2, real_t y2, real_t z2, real_t w2),
             TAKEC(real_t x3, real_t y3, real_t z3, real_t w3)))
 {
-    return (MT) {
+    return (MT) {{
         TAKEC(
-            (VT){{TAKEC(x0, y0, z0, w0)}},
-            (VT){{TAKEC(x1, y1, z1, w1)}},
-            (VT){{TAKEC(x2, y2, z2, w2)}},
-            (VT){{TAKEC(x3, y3, z3, w3)}}
+            {{TAKEC(x0, y0, z0, w0)}},
+            {{TAKEC(x1, y1, z1, w1)}},
+            {{TAKEC(x2, y2, z2, w2)}},
+            {{TAKEC(x3, y3, z3, w3)}}
         )
-    };
+    }};
 }
 
 NOC_DEF MT MNAME(_mul)(MT a, MT b)
@@ -579,28 +588,29 @@ NOC_DEF void MNAME(_iscale)(TAKEC(MT *m, real_t x, real_t y, real_t z))
 
 #if N == 4
 
-vec3_t mat4_mul_vec3(mat4_t m, vec3_t v)
+NOC_DEF vec3_t mat4_mul_vec3(mat4_t m, vec3_t v)
 {
     vec4_t v4 = vec4(v.x, v.y, v.z, 1);
     return mat4_mul_vec(m, v4).xyz;
 }
 
-mat4_t mat4_ortho(real_t left, real_t right, real_t bottom,
+NOC_DEF mat4_t mat4_ortho(real_t left, real_t right, real_t bottom,
                   real_t top, real_t near, real_t far)
 {
     real_t tx = -(right + left) / (right - left);
     real_t ty = -(top + bottom) / (top - bottom);
     real_t tz = -(far + near) / (far - near);
-    const mat4_t tmp = {{
+    const mat4_t tmp = mat4(
         2 / (right - left), 0, 0, 0,
         0, 2 / (top - bottom), 0, 0,
         0, 0, -2 / (far - near), 0,
         tx, ty, tz, 1
-    }};
+    );
     return tmp;
 }
 
-mat4_t mat4_perspective(real_t fovy, real_t aspect, real_t near, real_t far)
+NOC_DEF mat4_t mat4_perspective(real_t fovy, real_t aspect,
+                                real_t near, real_t far)
 {
     real_t radian = fovy * M_PI / 180;
     real_t f = 1. / tan(radian / 2.);
@@ -613,8 +623,9 @@ mat4_t mat4_perspective(real_t fovy, real_t aspect, real_t near, real_t far)
     return tmp;
 }
 
-mat4_t mat4_frustum(real_t left, real_t right, real_t bottom, real_t top,
-                    real_t nearval, real_t farval)
+NOC_DEF mat4_t mat4_frustum(real_t left, real_t right,
+                            real_t bottom, real_t top,
+                            real_t nearval, real_t farval)
 {
    real_t x, y, a, b, c, d;
    mat4_t tmp;
@@ -636,7 +647,7 @@ mat4_t mat4_frustum(real_t left, real_t right, real_t bottom, real_t top,
    return tmp;
 }
 
-mat4_t mat4_invert(mat4_t mat)
+NOC_DEF mat4_t mat4_invert(mat4_t mat)
 {
     real_t det;
     int i;
