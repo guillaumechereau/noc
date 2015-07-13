@@ -564,7 +564,7 @@ NOC_CPP(NOC_DEF VT& operator*=(VT &v, MT m) {return v = v * m;})
 
 NOC_DEF MT MNAME(_translate)(TAKEC(MT m, real_t x, real_t y, real_t z))
 {
-#define M(row,col)  m.v[row * N + col]
+#define M(row,col)  m.v[(row) * N + (col)]
     int i;
     for (i = 0; i < N; i++) {
        M(N - 1, i) += TAKE( 0,
@@ -583,11 +583,12 @@ NOC_DEF void MNAME(_itranslate)(TAKEC(MT *m, real_t x, real_t y, real_t z))
 NOC_DEF MT MNAME(_scale)(TAKEC(MT m, real_t x, real_t y, real_t z))
 {
     int i;
-    for (i = 0; i < N; i++)
+    for (i = 0; i < N; i++) {
         TAKE(;                     ,
              m.v[i] *= x;          ,
              m.v[i * N] *= y;      ,
              m.v[i * N * 2] *= z;)
+    }
     return m;
 }
 NOC_DEF void MNAME(_iscale)(TAKEC(MT *m, real_t x, real_t y, real_t z))
