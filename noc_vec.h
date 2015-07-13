@@ -246,10 +246,21 @@
     #define VEC4_SPLIT(v) (v).x, (v).y, (v).z, (v).w
 #endif
 
-#define VNAME__(n_, x_) vec##n_##x_
-#define VNAME_(n_, x_) VNAME__(n_, x_)
-#define VNAME(x_) VNAME_(N, x_)
+// Optional prefix and suffix
+#ifndef NOC_VEC_PREF
+    #define NOC_VEC_PREF
+#endif
+#ifndef NOC_VEC_SUF
+    #define NOC_VEC_SUF
+#endif
+
+#define VNAME__(n_, pref_, suf_, x_) pref_##vec##n_##suf_##x_
+#define VNAME_(n_, pref_, suf_, x_) VNAME__(n_, pref_, suf_, x_)
+#define VNAME(x_) VNAME_(N, NOC_VEC_PREF, NOC_VEC_SUF, x_)
+#define VNAMEN(n_, x_) VNAME_(n_, NOC_VEC_PREF, NOC_VEC_SUF, x_)
 #define VT VNAME(_t)
+#define V3T VNAMEN(3, _t)
+#define V4T VNAMEN(4, _t)
 #define VF(name, ...) VNAME(_##name)(__VA_ARGS__)
 #ifdef NOCVEC_REAL_TYPE
     #define real_t NOCVEC_REAL_TYPE
@@ -266,8 +277,8 @@
 typedef union {
     struct { real_t TAKEC(x, y, z, w); };
     struct { real_t TAKEC(r, g, b, a); };
-    NGE3(vec2_t xy;  vec2_t rg;)
-    NGE4(vec3_t xyz; vec3_t rgb;)
+    NGE3(VNAMEN(2, _t) xy;  VNAMEN(2, _t) rg;)
+    NGE4(VNAMEN(3, _t) xyz; VNAMEN(3, _t) rgb;)
     real_t v[N];
 } VT;
 
@@ -405,18 +416,18 @@ NOC_DEF real_t VNAME(_dist)(VT a, VT b)
 
 // Cross product: vecN_cross
 NE2(
-    NOC_DEF real_t vec2_cross(VT a, VT b) {
+    NOC_DEF real_t VNAME(_cross)(VT a, VT b) {
         return a.x * b.y - a.y * b.x;
     }
-    NOC_CPP(NOC_DEF real_t operator^(VT a, VT b) {return vec2_cross(a, b);})
+    NOC_CPP(NOC_DEF real_t operator^(VT a, VT b) {return VF(cross, a, b);})
 )
 NE3(
-    NOC_DEF vec3_t vec3_cross(VT a, VT b) {
-        return vec3(a.x * b.y - a.y * b.x,
-                    a.y * b.z - a.z * b.y,
-                    a.z * b.x - a.x * b.z);
+    NOC_DEF VT VNAME(_cross)(VT a, VT b) {
+        return VNAME()(a.x * b.y - a.y * b.x,
+                       a.y * b.z - a.z * b.y,
+                       a.z * b.x - a.x * b.z);
     }
-    NOC_CPP(NOC_DEF vec3_t operator^(VT a, VT b) {return vec3_cross(a, b);})
+    NOC_CPP(NOC_DEF VT operator^(VT a, VT b) {return VF(cross, a, b);})
 )
 
 NOC_DEF VT VNAME(_mix)(VT a, VT b, real_t t)
@@ -433,35 +444,35 @@ NOC_DEF VT VNAME(_lerp)(VT a, VT b, real_t t)
 }
 
 NE2(
-    NOC_DEF vec2_t vec2_rot(VT v, real_t a)
+    NOC_DEF VT VNAME(_rot)(VT v, real_t a)
     {
-        return vec2(v.x * cos(a) - v.y * sin(a),
-                    v.x * sin(a) + v.y * cos(a));
+        return VNAME()(v.x * cos(a) - v.y * sin(a),
+                       v.x * sin(a) + v.y * cos(a));
     }
 
-    NOC_DEF vec2_t vec2_perp(VT v)
+    NOC_DEF VT VNAME(_perp)(VT v)
     {
-        return vec2(-v.y, v.x);
+        return VNAME()(-v.y, v.x);
     }
 
-    NOC_DEF vec2_t vec2_rperp(VT v)
+    NOC_DEF VT VNAME(_rperp)(VT v)
     {
-        return vec2(v.y, -v.x);
+        return VNAME()(v.y, -v.x);
     }
 
-    NOC_DEF real_t vec2_angle(VT v)
+    NOC_DEF real_t VNAME(_angle)(VT v)
     {
         return atan2(v.y, v.x);
     }
 
-    NOC_DEF vec2_t vec2_rotate(VT a, VT b)
+    NOC_DEF VT VNAME(_rotate)(VT a, VT b)
     {
-        return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
+        return VNAME()(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
     }
 
-    NOC_DEF vec2_t vec2_unrotate(VT a, VT b)
+    NOC_DEF VT VNAME(_unrotate)(VT a, VT b)
     {
-        return vec2(a.x * b.x + a.y * b.y, a.y * b.x + a.x * b.y);
+        return VNAME()(a.x * b.x + a.y * b.y, a.y * b.x + a.x * b.y);
     }
 )
 
@@ -588,9 +599,9 @@ NOC_DEF void MNAME(_iscale)(TAKEC(MT *m, real_t x, real_t y, real_t z))
 
 #if N == 4
 
-NOC_DEF vec3_t mat4_mul_vec3(mat4_t m, vec3_t v)
+NOC_DEF V3T mat4_mul_vec3(mat4_t m, V3T v)
 {
-    vec4_t v4 = vec4(v.x, v.y, v.z, 1);
+    V4T v4 = VNAMEN(4, )(v.x, v.y, v.z, 1);
     return mat4_mul_vec(m, v4).xyz;
 }
 
@@ -710,7 +721,7 @@ typedef union {
         real_t x, y, z, w;
     };
     struct {
-        vec3_t v;
+        V3T v;
         real_t a;
     };
 } quat_t;
@@ -723,11 +734,11 @@ static const quat_t quat_identity = {{0, 0, 0, 1}};
 NOC_DEF quat_t quat_from_axis(real_t a, real_t x, real_t y, real_t z)
 {
     real_t sin_angle;
-    vec3_t vn;
+    V3T vn;
     a *= 0.5f;
 
-    vn = vec3(x, y, z);
-    vec3_normalize(&vn);
+    vn = VNAMEN(3, )(x, y, z);
+    VNAMEN(3, _normalize)(&vn);
 
     sin_angle = sin(a);
 
@@ -822,20 +833,20 @@ NOC_DEF mat4_t quat_to_mat4(quat_t q)
               0,               0,               0,               1);
 }
 
-NOC_DEF vec3_t quat_mul_vec3(quat_t q, vec3_t v)
+NOC_DEF V3T quat_mul_vec3(quat_t q, V3T v)
 {
     mat3_t m = quat_to_mat3(q);
     return mat3_mul_vec(m, v);
 }
-NOC_CPP(NOC_DEF vec3_t operator*(vec3_t v, quat_t q) {
+NOC_CPP(NOC_DEF V3T operator*(V3T v, quat_t q) {
    return quat_mul_vec3(q, v);})
 
-NOC_DEF vec4_t quat_mul_vec4(quat_t q, vec4_t v)
+NOC_DEF V4T quat_mul_vec4(quat_t q, V4T v)
 {
     mat4_t m = quat_to_mat4(q);
     return mat4_mul_vec(m, v);
 }
-NOC_CPP(NOC_DEF vec4_t operator*(vec4_t v, quat_t q) {
+NOC_CPP(NOC_DEF V4T operator*(V4T v, quat_t q) {
    return quat_mul_vec4(q, v);})
 
 NOC_DEF mat4_t mat4_mul_quat(mat4_t mat, quat_t q)
@@ -875,7 +886,7 @@ NOC_DEF quat_t quat_slerp(quat_t a, quat_t b, real_t t)
     return quat_normalized(out);
 }
 
-NOC_DEF real_t quat_get_axis_angle(quat_t q, vec3_t *axis)
+NOC_DEF real_t quat_get_axis_angle(quat_t q, V3T *axis)
 {
     if (axis) {
        axis->x = q.x / sqrt(1 - q.w * q.w);
