@@ -861,30 +861,37 @@ NOC_DEF void mat4_imul_quat(mat4_t *mat, quat_t q)
     *mat = mat4_mul_quat(*mat, q);
 }
 
+NOC_DEF quat_t quat_neg(quat_t q)
+{
+    return quat(-q.x, -q.y, -q.z, -q.w);
+}
+
 NOC_DEF quat_t quat_slerp(quat_t a, quat_t b, real_t t)
 {
-    // I found this algo online, supposed to be adapted from Shoemake's paper.
-    quat_t out;
-    real_t dotproduct;
-    real_t theta, st, sut, sout, coeff1, coeff2;
-
-    dotproduct = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
-    theta = acos(dotproduct);
-    if (theta < 0.0) theta = -theta;
-    st = sin(theta);
-    // XXX: fix that!
-    if (fabs(st) < 0.0001) return a;
-
-    sut = sin(t * theta);
-    sout = sin((1 - t) * theta);
-    coeff1 = sout / st;
-    coeff2 = sut / st;
-
-    out.x = coeff1 * a.x + coeff2 * b.x;
-    out.y = coeff1 * a.y + coeff2 * b.y;
-    out.z = coeff1 * a.z + coeff2 * b.z;
-    out.w = coeff1 * a.w + coeff2 * b.w;
-    return quat_normalized(out);
+    real_t dot, f1, f2, angle, sin_angle;
+    if (t <= 0)
+        return a;
+    else if (t >= 1)
+        return b;
+    dot = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+    if (dot <= 0) {
+        b = quat_neg(b);
+        dot = -dot;
+    }
+    f1 = 1 - t;
+    f2 = t;
+    if ((1 - dot) > 0.0000001) {
+        angle = acos(dot);
+        sin_angle = sin(angle);
+        if (sin_angle > 0.0000001) {
+            f1 = sin((1 - t) * angle) / sin_angle;
+            f2 = sin(t * angle) / sin_angle;
+        }
+    }
+    return quat(a.x * f1 + b.x * f2,
+                a.y * f1 + b.y * f2,
+                a.z * f1 + b.z * f2,
+                a.w * f1 + b.w * f2);
 }
 
 NOC_DEF real_t quat_get_axis_angle(quat_t q, V3T *axis)
