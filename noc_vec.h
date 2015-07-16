@@ -799,7 +799,7 @@ NOC_DEF void quat_irotate(quat_t *q, real_t a, real_t x, real_t y, real_t z)
 NOC_DEF quat_t quat_normalized(quat_t q)
 {
     real_t norm = quat_norm(q);
-    return quat(q.x / norm, q.y / norm, q.z / norm, q.z / norm);
+    return quat(q.x / norm, q.y / norm, q.z / norm, q.w / norm);
 }
 
 NOC_DEF void quat_normalize(quat_t *q)
