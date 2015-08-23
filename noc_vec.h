@@ -102,8 +102,9 @@
  *     vec2_iadd(&a, b);
  *
  * vecN(...)            Create a vector from coordinates
+ * vecN_[i]equal        Comparison
  * vecN_[i]add          Addition
- * vecN_[i]sub          Substraction
+ * vecN_[i]sub          Subtraction
  * vecN_[i]mul          Multiplication by a scalar
  * vecN_[i]div          Division by a scalar
  * vecN_[i]addk         Multiplication by scalar and addition: c = a + b * k
