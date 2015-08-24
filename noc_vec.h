@@ -587,8 +587,8 @@ NOC_DEF MT MNAME(_scale)(TAKEC(MT m, real_t x, real_t y, real_t z))
     for (i = 0; i < N; i++) {
         TAKE(;                     ,
              m.v[i] *= x;          ,
-             m.v[i * N] *= y;      ,
-             m.v[i * N * 2] *= z;)
+             m.v[i + N] *= y;      ,
+             m.v[i + 2 * N] *= z;)
     }
     return m;
 }
