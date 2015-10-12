@@ -183,6 +183,7 @@ const char *noc_file_dialog_open(int flags,
     NSSavePanel *panel;
     NSOpenPanel *open_panel;
     NSMutableArray *types_array;
+    NSURL *default_url;
     // XXX: I don't know about memory management with cococa, need to check
     // if I leak memory here.
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
@@ -196,6 +197,13 @@ const char *noc_file_dialog_open(int flags,
     if (flags & NOC_FILE_DIALOG_DIR) {
         [open_panel setCanChooseDirectories:YES];
         [open_panel setCanChooseFiles:NO];
+    }
+
+    if (default_path) {
+        default_url = [NSURL fileURLWithPath:
+            [NSString stringWithUTF8String:default_path]];
+        [panel setDirectoryURL:default_url];
+        [panel setNameFieldStringValue:default_url.lastPathComponent];
     }
 
     if (filters) {
