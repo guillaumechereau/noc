@@ -5,6 +5,7 @@ A list of public domain libraries for C/C++, inspired by the stb libraries.
 
 * **noc_turtle**: procedural graphics generation in plain C.
 * **noc_vec**: 2d, 3d and 4d vectors, 2x2, 3x3, and 4x4 matrices, quaternions.
+* **noc_file_dialog**: multiplatform native open and save dialogs.
 
 To compile the demo, type 'make'.  You need to have OpenGL, GLFW, and GLEW.
 
