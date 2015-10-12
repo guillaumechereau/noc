@@ -22,6 +22,12 @@ noc_turtle.h for some documentation about the usage.
 Simple single file linear alebra library that includes vector, matrix and
 quaternion.  See tests/vec.cpp and noc_vec.h for usage.
 
+## noc_file_dialog
+
+Single file library to create native open and save file dialogs on multiple
+platforms.
+
+
 
 [Context Free]: http://www.contextfreeart.org/
 [Blowfish Rescue]: http://noctua-software.com/blowfish-rescue

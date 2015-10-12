@@ -1,7 +1,7 @@
 # For the moment I just use this simple Makefile.
 # If you don't want to use libasan, just remove -lasan and -fsanitize=address
 
-all: linear turtle
+all: linear turtle file_dialog
 
 turtle:
 	g++ -o test_turtle \
@@ -16,3 +16,11 @@ linear:
 	    -Wall \
 	    -O0 -g \
 	    -I ./ -lm
+
+file_dialog:
+	g++ -o test_file_dialog \
+	    tests/file_dialog.c \
+	    `pkg-config --cflags --libs gtk+-2.0` \
+	    -Wall \
+	    -O0 \
+	    -I ./
