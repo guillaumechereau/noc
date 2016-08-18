@@ -3,11 +3,17 @@ noc
 
 A list of public domain libraries for C/C++, inspired by the stb libraries.
 
+* **noc_mustache**: mustache template in plain C.
 * **noc_turtle**: procedural graphics generation in plain C.
 * **noc_vec**: 2d, 3d and 4d vectors, 2x2, 3x3, and 4x4 matrices, quaternions.
 * **noc_file_dialog**: multiplatform native open and save dialogs.
 
 To compile the demo, type 'make'.  You need to have OpenGL, GLFW, and GLEW.
+
+## noc_mustache
+
+A **Very crude** single file implementation of the [mustache] template
+language.  I originally wrote it for the povray export of [goxel].
 
 ## noc_turtle
 
@@ -29,7 +35,8 @@ Single file library to create native open and save file dialogs on multiple
 platforms.
 
 
-
+[mustache]: https://mustache.github.io/
+[goxel]: http://guillaumechereau.github.io/goxel/
 [Context Free]: http://www.contextfreeart.org/
 [Blowfish Rescue]: http://noctua-software.com/blowfish-rescue
 
