@@ -134,7 +134,8 @@ const char *noc_file_dialog_open(int flags,
 
 #ifdef NOC_FILE_DIALOG_WIN32
 
-#include "Commdlg.h"
+#include <windows.h>
+#include <commdlg.h>
 
 const char *noc_file_dialog_open(int flags,
                                  const char *filters,
