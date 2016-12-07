@@ -51,7 +51,9 @@ enum {
  *                      "name1 reg1 name2 reg2 ..."
  *                    The last value is followed by two '\0'.  For example,
  *                    to filter png and jpeg files, you can use:
- *                      "png\0*.png\0jpeg\0*.jpeg"
+ *                      "png\0*.png\0jpeg\0*.jpeg\0"
+ *                    You can also separate patterns with ';':
+ *                      "jpeg\0*.jpg;*.jpeg\0"
  *                    Set to NULL for no filter.
  * default_path     : the default file to use or NULL.
  * default_name     : the default file name to use or NULL.
@@ -86,6 +88,7 @@ const char *noc_file_dialog_open(int flags,
     GtkFileChooser *chooser;
     GtkFileChooserAction action;
     gint res;
+    char buf[128], *patterns;
 
     action = flags & NOC_FILE_DIALOG_SAVE ? GTK_FILE_CHOOSER_ACTION_SAVE :
                                             GTK_FILE_CHOOSER_ACTION_OPEN;
@@ -113,7 +116,18 @@ const char *noc_file_dialog_open(int flags,
         filter = gtk_file_filter_new();
         gtk_file_filter_set_name(filter, filters);
         filters += strlen(filters) + 1;
-        gtk_file_filter_add_pattern(filter, filters);
+
+        // Split the filter pattern with ';'.
+        strcpy(buf, filters);
+        buf[strlen(buf)] = '\0';
+        for (patterns = buf; *patterns; patterns++)
+            if (*patterns == ';') *patterns = '\0';
+        patterns = buf;
+        while (*patterns) {
+            gtk_file_filter_add_pattern(filter, patterns);
+            patterns += strlen(patterns) + 1;
+        }
+
         gtk_file_chooser_add_filter(chooser, filter);
         filters += strlen(filters) + 1;
     }
