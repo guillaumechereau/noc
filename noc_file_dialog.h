@@ -225,9 +225,18 @@ const char *noc_file_dialog_open(int flags,
         types_array = [NSMutableArray array];
         while (*filters) {
             filters += strlen(filters) + 1; // skip the name
-            assert(strncmp(filters, "*.", 2) == 0);
-            filters += 2; // Skip the "*."
-            [types_array addObject:[NSString stringWithUTF8String: filters]];
+            // Split the filter pattern with ';'.
+            strcpy(buf, filters);
+            buf[strlen(buf) + 1] = '\0';
+            for (patterns = buf; *patterns; patterns++)
+                if (*patterns == ';') *patterns = '\0';
+            patterns = buf;
+            while (*patterns) {
+                assert(strncmp(patterns, "*.", 2) == 0);
+                patterns += 2; // Skip the "*."
+                [types_array addObject:[NSString stringWithUTF8String: patterns]];
+                patterns += strlen(patterns) + 1;
+            }
             filters += strlen(filters) + 1;
         }
         [panel setAllowedFileTypes:types_array];
