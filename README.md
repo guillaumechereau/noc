@@ -1,7 +1,7 @@
 noc
 ===
 
-A list of public domain libraries for C/C++, inspired by the stb libraries.
+A list of libraries for C/C++, inspired by the stb libraries.
 
 * **noc_mustache**: mustache template in plain C.
 * **noc_turtle**: procedural graphics generation in plain C.
