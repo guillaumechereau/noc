@@ -1,7 +1,7 @@
 # For the moment I just use this simple Makefile.
 # If you don't want to use libasan, just remove -lasan and -fsanitize=address
 
-all: linear turtle file_dialog mustache
+all: packer
 
 mustache:
 	g++ -o test_mustache \
@@ -31,3 +31,7 @@ file_dialog:
 	    -Wall \
 	    -O0 \
 	    -I ./
+
+packer:
+	g++ -o test_packer tests/packer.c \
+	    -Wall -O0 -fsanitize=address -g -I ./ -lz
