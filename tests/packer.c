@@ -61,7 +61,7 @@ int main()
     // Uncompress it.
     size = noc_packer_uncompress(buf, size, sizeof(data[0]),
                                  cols, (char**)&data2);
-    assert(size == 1024);
+    assert(size == 1024 * sizeof(data[0]));
     // Check that the data is correct.
     for (i = 0; i < 1024; i++) {
         assert(data2[i].x == data[i].x);
