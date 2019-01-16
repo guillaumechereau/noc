@@ -177,13 +177,16 @@ const char *noc_file_dialog_open(int flags,
     ofn.lpstrInitialDir = (LPSTR)default_path;
     ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
+    if (flags & NOC_FILE_DIALOG_OVERWRITE_CONFIRMATION)
+        ofn.Flags |= OFN_OVERWRITEPROMPT;
+
     if (flags & NOC_FILE_DIALOG_OPEN)
         ret = GetOpenFileName(&ofn);
     else
         ret = GetSaveFileName(&ofn);
 
     free(g_noc_file_dialog_ret);
-    g_noc_file_dialog_ret = ret ? strdup(szFile) : NULL;
+    g_noc_file_dialog_ret = ret ? _strdup(szFile) : NULL;
     return g_noc_file_dialog_ret;
 }
 
