@@ -78,6 +78,10 @@ static char *g_noc_file_dialog_ret = NULL;
 
 #include <gtk/gtk.h>
 
+#ifdef GDK_WINDOWING_X11
+#include <gdk/gdkx.h>
+#endif
+
 const char *noc_file_dialog_open(int flags,
                                  const char *filters,
                                  const char *default_path,
@@ -132,6 +136,16 @@ const char *noc_file_dialog_open(int flags,
         filters += strlen(filters) + 1;
     }
 
+    gtk_widget_show_all(dialog);
+#ifdef GDK_WINDOWING_X11
+    if (GDK_IS_X11_DISPLAY(gdk_display_get_default())) {
+        GdkWindow *window = gtk_widget_get_window(dialog);
+        gdk_window_set_events(window,
+            gdk_window_get_events(window) | GDK_PROPERTY_CHANGE_MASK);
+        gtk_window_present_with_time(GTK_WINDOW(dialog),
+            gdk_x11_get_server_time(window));
+    }
+#endif
     res = gtk_dialog_run(GTK_DIALOG(dialog));
 
     free(g_noc_file_dialog_ret);
